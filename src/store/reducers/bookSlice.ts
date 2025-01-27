@@ -1,0 +1,178 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { Book } from '@prisma/client';
+
+interface BookFormState {
+  loading: boolean;
+  success: boolean;
+  error: string | null;
+}
+
+interface BooksState {
+  totalBooks: number;
+  finishedBooks: number;
+  catalog: Book[];
+  loading: boolean;
+  error: string | null;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+  };
+
+  addBookState: BookFormState;
+  editBookState: BookFormState;
+}
+
+const initialState: BooksState = {
+  totalBooks: 0,
+  finishedBooks: 0,
+  catalog: [],
+  loading: false,
+  error: null,
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+  },
+  addBookState: {
+    loading: false,
+    success: false,
+    error: null,
+  },
+  editBookState: {
+    loading: false,
+    success: false,
+    error: null,
+  },
+};
+
+// Define the return type of the async thunk
+export const fetchBooksData = createAsyncThunk<
+  {
+    books: Book[];
+    totalBooks: number;
+    finishedBooks: number;
+    totalPages: number;
+  },
+  {
+    page: number;
+    filters?: { category?: string; status?: string };
+    userId: string;
+  }
+>('books/fetchBooksData', async ({ page, filters, userId }) => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    userId,
+    ...filters,
+  });
+  const response = await fetch(`/api/books?${params.toString()}`);
+  // const response = await fetch(`/api/books?page=${page}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch books data');
+  }
+  return await response.json();
+});
+
+export const addBook = createAsyncThunk<Book, FormData>(
+  'books/addBook',
+  async (formData) => {
+    const response = await fetch('/api/books', {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error('Failed to add book');
+    }
+    return await response.json();
+  }
+);
+
+export const editBook = createAsyncThunk<
+  Book,
+  { id: number; formData: FormData }
+>('books/editBook', async ({ id, formData }) => {
+  const response = await fetch(`/api/books/${id}`, {
+    method: 'PUT',
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error('Failed to edit book');
+  }
+  return await response.json();
+});
+
+const booksSlice = createSlice({
+  name: 'books',
+  initialState,
+  reducers: {
+    setCurrentPage: (state, action) => {
+      state.pagination.currentPage = action.payload;
+    },
+    resetAddBookState: (state) => {
+      state.addBookState = { loading: false, success: false, error: null };
+    },
+    resetEditBookState: (state) => {
+      state.editBookState = { loading: false, success: false, error: null };
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchBooksData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBooksData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.catalog = action.payload.books;
+        state.totalBooks = action.payload.totalBooks;
+        state.finishedBooks = action.payload.finishedBooks;
+        state.pagination.totalPages = action.payload.totalPages;
+      })
+      .addCase(fetchBooksData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch books';
+      });
+
+    // add book state
+    builder
+      .addCase(addBook.pending, (state) => {
+        state.addBookState.loading = true;
+        state.addBookState.error = null;
+        state.addBookState.success = false;
+      })
+      .addCase(addBook.fulfilled, (state, action) => {
+        state.addBookState.loading = false;
+        state.addBookState.success = true;
+        state.catalog.push(action.payload);
+      })
+      .addCase(addBook.rejected, (state, action) => {
+        state.addBookState.loading = false;
+        state.addBookState.error = action.error.message || 'Failed to add book';
+      });
+
+    // edit book state
+    builder
+      .addCase(editBook.pending, (state) => {
+        state.editBookState.loading = true;
+        state.editBookState.error = null;
+        state.editBookState.success = false;
+      })
+      .addCase(editBook.fulfilled, (state, action) => {
+        state.editBookState.loading = false;
+        state.editBookState.success = true;
+        const index = state.catalog.findIndex(
+          (b) => b.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.catalog[index] = action.payload;
+        }
+      })
+      .addCase(editBook.rejected, (state, action) => {
+        state.editBookState.loading = false;
+        state.editBookState.error =
+          action.error.message || 'Failed to edit book';
+      });
+  },
+});
+
+export const { setCurrentPage, resetAddBookState, resetEditBookState } =
+  booksSlice.actions;
+export default booksSlice.reducer;
