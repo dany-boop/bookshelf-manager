@@ -43,14 +43,14 @@ export async function GET(req: NextRequest) {
     const finishedBooks = await prisma.book.count({
       where: { status: 'FINISHED' },
     });
-    const reading = await prisma.book.count({
+    const readBooks = await prisma.book.count({
       where: { status: 'READING' },
     });
 
     return NextResponse.json({
       books,
       totalBooks,
-      reading,
+      readBooks,
       finishedBooks,
       totalPages: Math.ceil(totalBooks / limit),
       currentPage: page,

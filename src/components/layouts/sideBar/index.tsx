@@ -1,56 +1,20 @@
 'use client';
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Icon } from '@iconify/react';
+import { Menu, menu } from '@/lib/data';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface SidebarProps {
   onToggleSidebar?: (isOpen: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
-  //   const [menu, setMenu] = useState<MenuItem[]>([]);
-
-  // const [isOpen, setIsOpen] = useState<boolean>(true);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollableViewport = sidebarRef.current?.querySelector(
-        '[data-radix-scroll-area-viewport]'
-      );
-
-      if (scrollableViewport) {
-        const currentScrollTop = (scrollableViewport as HTMLElement).scrollTop;
-
-        if (currentScrollTop > 0) {
-          setIsScrolled(true);
-        } else {
-          setIsScrolled(false);
-        }
-      }
-    };
-
-    const scrollableViewport = sidebarRef.current?.querySelector(
-      '[data-radix-scroll-area-viewport]'
-    );
-
-    if (scrollableViewport) {
-      scrollableViewport.addEventListener('scroll', handleScroll);
-    }
-
-    return () => {
-      if (scrollableViewport) {
-        scrollableViewport.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, []);
-
   const [isOpen, setIsOpen] = useState<boolean>(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Use useEffect to load the state from localStorage on the client side
   useEffect(() => {
@@ -78,10 +42,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
   };
 
   return (
-    <nav className="w-full overflow-hidden">
+    <nav className="w-full overflow-hidden border border-1 ">
       <div className="flex justify-between items-center bg-[--bg-color] text-[--text-color] p-4 ps-2 pb-3  transition-all duration-500  top-0  z-50">
         <div className="flex align-middle">
-          {/* <Link href={'/'}>
+          <Link href={'/'}>
             <div className={`flex  justify-between gap-5 align-middle `}>
               <div className="">
                 <Image
@@ -94,21 +58,21 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
                 />
               </div>
               {isOpen && (
-                <h1 className="text-xl mt-1 font-extrabold text-[--text-color] transition-all duration-300">
-                  JSy Dashboard
+                <h1 className="text-xl text-slate-900 dark:text-slate-100 mt-1 font-extrabold text-[--text-color] transition-all duration-300">
+                  Bookshelf
                 </h1>
               )}
             </div>
-          </Link> */}
+          </Link>
 
           <div
             className={`fixed  z-50 transition-all duration-300 ${
-              isOpen ? 'md:ml-[16em] ml-[14em]' : 'ml-[2.5em]'
+              isOpen ? 'md:ml-[16.5em] ml-[14em]' : 'ml-[3em]'
             } `}
           >
             <button
               onClick={handleToggleSidebar}
-              className="text-2xl   rounded-full bg-white backdrop-filter backdrop-blur-xl  p-1 shadow-md "
+              className="text-2xl rounded-full p-1 border "
             >
               <motion.div
                 variants={arrowVariants} // Use the defined animation variants
@@ -117,9 +81,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
                 transition={{ duration: 0.5, ease: 'easeInOut' }} // Controls the animation speed
               >
                 <Icon
-                  icon="solar:round-alt-arrow-right-line-duotone"
-                  width={25}
-                  className=" transition-opacity duration-300 text-black"
+                  icon="solar:alt-arrow-right-outline"
+                  width={20}
+                  className=" transition-opacity duration-300 text-slate-400"
                 />
               </motion.div>
             </button>
@@ -128,23 +92,28 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
       </div>
 
       <div className="relative">
-        {/* Gradient Overlay */}
-        {isScrolled && (
-          <div
-            className={`absolute top-0 left-0 w-full h-20 bg-gradient-to-t from-transparent from-20% to-[--bg-color] to-90% z-10 transition-opacity duration-300`}
-          ></div>
-        )}
-        <ScrollArea
-          ref={sidebarRef}
-          className={`h-screen ease-in transform duration-200 backdrop-filter w-full backdrop-blur-md bg-[--bg-color] py-3 m md:min-w-48 pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
-           md:relative transition-transform`}
+        <div
+          className={`h-screen ease-in transform duration-200 backdrop-filter  backdrop-blur-md bg-[--bg-color] py-3   pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
+           md:relative transition-transform ${
+             isOpen ? 'w-full md:min-w-48 ' : 'w-16'
+           }`}
         >
-          {/* <Menu
-            menu={menus}
-            isSidebarOpen={isOpen}
-            toggleSidebar={handleToggleSidebar}
-          /> */}
-        </ScrollArea>
+          {menu.map((menu) => (
+            <div className="mx-3 mb-5">
+              <button
+                className={`flex gap-3 py-2 px-2 w-full rounded-md  font-medium ${
+                  pathname.includes(menu.url)
+                    ? 'bg-yellow-500/40 text-yellow-500'
+                    : 'text-neutral-500 hover:bg-zinc-100'
+                }`}
+                onClick={() => router.push(menu.url)}
+              >
+                <Icon icon={menu.icon} width={25}></Icon>
+                {isOpen && <p className="flex justify-start ">{menu.name}</p>}
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </nav>
   );

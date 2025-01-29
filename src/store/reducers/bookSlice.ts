@@ -7,9 +7,10 @@ interface BookFormState {
   error: string | null;
 }
 
-interface BooksState {
+export interface BooksState {
   totalBooks: number;
   finishedBooks: number;
+  readBooks: number;
   catalog: Book[];
   loading: boolean;
   error: string | null;
@@ -25,6 +26,7 @@ interface BooksState {
 const initialState: BooksState = {
   totalBooks: 0,
   finishedBooks: 0,
+  readBooks: 0,
   catalog: [],
   loading: false,
   error: null,
@@ -50,6 +52,7 @@ export const fetchBooksData = createAsyncThunk<
     books: Book[];
     totalBooks: number;
     finishedBooks: number;
+    readBooks: number;
     totalPages: number;
   },
   {
@@ -124,6 +127,7 @@ const booksSlice = createSlice({
         state.catalog = action.payload.books;
         state.totalBooks = action.payload.totalBooks;
         state.finishedBooks = action.payload.finishedBooks;
+        state.readBooks = action.payload.readBooks;
         state.pagination.totalPages = action.payload.totalPages;
       })
       .addCase(fetchBooksData.rejected, (state, action) => {

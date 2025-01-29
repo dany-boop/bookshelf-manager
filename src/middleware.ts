@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: Request) {
+export function middleware(request: NextRequest) {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
 
   // Exclude the login route from token validation
@@ -12,6 +12,17 @@ export function middleware(request: Request) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  const protectedRoutes = ['/dashboard', '/profile']; // Add protected routes here
+  const isAuthenticated =
+    token && JSON.parse(token)?.auth?.isAuthenticated === 'true';
+  if (
+    protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
+  ) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/auth/login', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
   try {
     return NextResponse.next();
   } catch (error) {

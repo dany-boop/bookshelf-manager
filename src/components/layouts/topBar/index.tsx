@@ -40,7 +40,7 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
   return (
     <>
       <header
-        className={`fixed  md:w-[82em] w-[26.6em]  z-40  transition-all duration-300 h-[4rem]  ${
+        className={`fixed md:w-[82em] w-[26.6em]  z-40  transition-all duration-300 h-[4rem]  ${
           isSidebarOpen
             ? 'md:w-[calc(100%-18rem)] w-[calc(100%--0.5rem)]'
             : 'md:w-[calc(100%-4.5rem)] w-[calc(100%--0.5rem)]'
