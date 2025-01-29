@@ -88,16 +88,13 @@ const MainLayout: FC<Props> = ({ children }) => {
           }`}
         >
           {/* Top Bar */}
-          <div
-            className=" top-0 z-30 "
-            // md:max-w-[95.5em]
-          >
+          <div className=" top-0 z-30 ">
             <TopBar isScrolled={isScrolled} isSidebarOpen={isSidebarOpen} />
           </div>
 
           {/* Main Content */}
           <ScrollArea
-            className="flex-1 container overflow-y-auto bg-[--bg-color] px-8"
+            className="flex-1 overflow-y-auto bg-stone-100 dark:bg-stone-900 px-8 w-full"
             ref={mainContentRef}
           >
             {children}

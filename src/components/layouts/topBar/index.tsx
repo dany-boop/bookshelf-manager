@@ -49,8 +49,8 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
         <div
           className={`flex px-7 justify-between items-center h-full  transition-all duration-300 ease-in-out ${
             isScrolled
-              ? 'mx-7 bg-[--bg-transparent]  shadow-md backdrop-filter backdrop-blur-sm rounded-b-lg transform translate-y-0'
-              : 'bg-[--bg-color] shadow-none transform -translate-y-1'
+              ? 'mx-7 bg-stone-100/80 dark:bg-stone-900/80 shadow-md backdrop-filter backdrop-blur-md rounded-b-lg transform translate-y-0'
+              : 'bg-stone-100 dark:bg-stone-900 shadow-none transform -translate-y-1'
           }`}
         >
           <div className="text-xl"></div>
@@ -67,17 +67,17 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
                 onClick={handleFullScreenToggle}
               />
             </button>
-            <div className="align-middle flex ">
+
+            <div className="my-auto">
               <ModeToggle />
             </div>
+            <p className="my-auto">{user?.username}</p>
             <button
-              className="flex justify-center bg-red-100 hover:bg-red-200 text-red-600  w-full font-semibold text-center rounded-lg mt-3"
+              className=" bg-red-100 hover:bg-red-200 text-red-600 rounded-lg my-auto"
               onClick={handleLogout}
             >
-              <Icon icon="lets-icons:sign-out-squre-duotone" width={40} />
+              <Icon icon="lets-icons:sign-out-squre-duotone" width={30} />
             </button>
-
-            <p>{user?.username}</p>
           </div>
         </div>
       </header>

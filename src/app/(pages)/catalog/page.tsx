@@ -1,3 +1,4 @@
+import CatalogContainer from '@/components/container/catalog';
 import MainLayout from '@/components/layouts';
 import React from 'react';
 
@@ -7,7 +8,9 @@ const Catalog = (props: Props) => {
   return (
     <main>
       <MainLayout>
-        <div className="pt-24 w-full">Catalog </div>
+        <div className="pt-24 w-full">
+          <CatalogContainer />
+        </div>
       </MainLayout>
     </main>
   );

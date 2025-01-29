@@ -13,4 +13,5 @@ export const menu: Menu[] = [
     icon: 'solar:home-line-duotone',
   },
   { id: 2, name: 'Catalog', url: '/catalog', icon: 'ph:books-duotone' },
+  { id: 3, name: 'Profile', url: '/profile', icon: 'solar:user-bold-duotone' },
 ];

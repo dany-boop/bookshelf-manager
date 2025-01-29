@@ -118,7 +118,7 @@ const RegisterForm = () => {
 
         <Button
           type="submit"
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+          className="w-full bg-green-600 hover:bg-green-700 shadow-md hover:shadow-xl text-white"
         >
           {loading ? 'Registering ...' : 'Register'}
         </Button>

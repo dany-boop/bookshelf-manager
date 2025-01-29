@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { Menu, menu } from '@/lib/data';
+import { menu } from '@/lib/data';
 import { usePathname, useRouter } from 'next/navigation';
 
 interface SidebarProps {
@@ -43,22 +43,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
 
   return (
     <nav className="w-full overflow-hidden border border-1 ">
-      <div className="flex justify-between items-center bg-[--bg-color] text-[--text-color] p-4 ps-2 pb-3  transition-all duration-500  top-0  z-50">
+      <div className="flex justify-between items-center bg-stone-100 dark:bg-stone-900 text-[--text-color] p-4 ps-2 pb-3  transition-all duration-500  top-0  z-50">
         <div className="flex align-middle">
           <Link href={'/'}>
             <div className={`flex  justify-between gap-5 align-middle `}>
               <div className="">
-                <Image
+                {/* <Image
                   src="/logo-removebg-preview.png"
                   alt="Login Image"
                   width={28}
                   height={28}
                   objectFit="cover"
                   loading="lazy"
-                />
+                /> */}
               </div>
               {isOpen && (
-                <h1 className="text-xl text-slate-900 dark:text-slate-100 mt-1 font-extrabold text-[--text-color] transition-all duration-300">
+                <h1 className="text-xl text-slate-900 dark:text-slate-100 mt-1 font-extrabold  transition-all duration-300">
                   Bookshelf
                 </h1>
               )}
@@ -72,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
           >
             <button
               onClick={handleToggleSidebar}
-              className="text-2xl rounded-full p-1 border "
+              className="text-2xl rounded-full p-1 border bg-slate-100 dark:bg-slate-900"
             >
               <motion.div
                 variants={arrowVariants} // Use the defined animation variants
@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
                 <Icon
                   icon="solar:alt-arrow-right-outline"
                   width={20}
-                  className=" transition-opacity duration-300 text-slate-400"
+                  className=" transition-opacity duration-300 text-slate-400 "
                 />
               </motion.div>
             </button>
@@ -91,24 +91,24 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
         </div>
       </div>
 
-      <div className="relative">
+      <div className="relative bg-stone-100 dark:bg-stone-900">
         <div
-          className={`h-screen ease-in transform duration-200 backdrop-filter  backdrop-blur-md bg-[--bg-color] py-3   pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
+          className={`h-screen ease-in transform duration-200 backdrop-filter  backdrop-blur-md bg-stone-100 dark:bg-stone-900 py-3 pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
            md:relative transition-transform ${
              isOpen ? 'w-full md:min-w-48 ' : 'w-16'
            }`}
         >
           {menu.map((menu) => (
-            <div className="mx-3 mb-5">
+            <div className="mx-3 mb-5" key={menu.id}>
               <button
                 className={`flex gap-3 py-2 px-2 w-full rounded-md  font-medium ${
                   pathname.includes(menu.url)
-                    ? 'bg-yellow-500/40 text-yellow-500'
-                    : 'text-neutral-500 hover:bg-zinc-100'
+                    ? 'bg-yellow-500/40 text-yellow-500 font-semibold'
+                    : 'text-neutral-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
                 onClick={() => router.push(menu.url)}
               >
-                <Icon icon={menu.icon} width={25}></Icon>
+                <Icon icon={menu.icon} width={25} />
                 {isOpen && <p className="flex justify-start ">{menu.name}</p>}
               </button>
             </div>

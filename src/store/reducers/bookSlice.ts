@@ -21,6 +21,7 @@ export interface BooksState {
 
   addBookState: BookFormState;
   editBookState: BookFormState;
+  deleteBookState: BookFormState;
 }
 
 const initialState: BooksState = {
@@ -44,7 +45,21 @@ const initialState: BooksState = {
     success: false,
     error: null,
   },
+  deleteBookState: {
+    loading: false,
+    success: false,
+    error: null,
+  },
 };
+
+interface BookSearchResponse {
+  books: Book[];
+  totalBooks: number;
+  finishedBooks: number;
+  readBooks: number;
+  totalPages: number;
+  currentPage: number;
+}
 
 // Define the return type of the async thunk
 export const fetchBooksData = createAsyncThunk<
@@ -57,15 +72,17 @@ export const fetchBooksData = createAsyncThunk<
   },
   {
     page: number;
+    query?: string;
     filters?: { category?: string; status?: string };
     userId: string;
   }
->('books/fetchBooksData', async ({ page, filters, userId }) => {
+>('books/fetchBooksData', async ({ page, filters, userId, query }) => {
   const params = new URLSearchParams({
     page: page.toString(),
     userId,
     ...filters,
   });
+  if (query) params.set('query', query);
   const response = await fetch(`/api/books?${params.toString()}`);
   // const response = await fetch(`/api/books?page=${page}`);
   if (!response.ok) {
@@ -102,6 +119,19 @@ export const editBook = createAsyncThunk<
   return await response.json();
 });
 
+export const deleteBook = createAsyncThunk<{ id: number }, number>(
+  'books/deleteBook',
+  async (id) => {
+    const response = await fetch(`/api/books/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete book');
+    }
+    return { id }; // Return the id of the deleted book
+  }
+);
+
 const booksSlice = createSlice({
   name: 'books',
   initialState,
@@ -114,6 +144,9 @@ const booksSlice = createSlice({
     },
     resetEditBookState: (state) => {
       state.editBookState = { loading: false, success: false, error: null };
+    },
+    resetDeleteBookState: (state) => {
+      state.deleteBookState = { loading: false, success: false, error: null };
     },
   },
   extraReducers: (builder) => {
@@ -173,6 +206,29 @@ const booksSlice = createSlice({
         state.editBookState.loading = false;
         state.editBookState.error =
           action.error.message || 'Failed to edit book';
+      });
+
+    builder
+      .addCase(deleteBook.pending, (state) => {
+        state.deleteBookState.loading = true;
+        state.deleteBookState.error = null;
+        state.deleteBookState.success = false;
+      })
+      .addCase(deleteBook.fulfilled, (state, action) => {
+        state.deleteBookState.loading = false;
+        state.deleteBookState.success = true;
+        // Remove the deleted book from the catalog
+        state.catalog = state.catalog.filter(
+          (book) => book.id !== action.payload.id
+        );
+      })
+      .addCase(deleteBook.rejected, (state, action) => {
+        state.deleteBookState.loading = false;
+        // Safely handle the error message and check its type
+        state.deleteBookState.error =
+          typeof action.error.message === 'string'
+            ? action.error.message
+            : 'Failed to delete book';
       });
   },
 });

@@ -3,6 +3,7 @@ import path from 'path';
 import { writeFile, unlink } from 'fs/promises';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
 
 const prisma = new PrismaClient();
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads');
@@ -20,9 +21,17 @@ async function saveImage(file: File): Promise<string> {
 }
 
 // Function to delete an image
-async function deleteImage(filePath: string) {
+
+async function deleteImage(oldImagePath: string) {
   try {
-    await unlink(filePath); // Delete the old image file
+    // Construct the absolute path to the file using the provided filePath (which starts with /uploads/)
+
+    if (fs.existsSync(oldImagePath)) {
+      console.log('Deleting image at:', oldImagePath);
+      await fs.promises.unlink(oldImagePath); // Delete the image file
+    } else {
+      console.log('File does not exist:', oldImagePath);
+    }
   } catch (error) {
     console.error('Failed to delete image:', error);
   }
@@ -136,7 +145,6 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    // Fetch the existing book to get the current cover image
     const existingBook = await prisma.book.findUnique({
       where: { id: Number(id) },
     });
@@ -145,14 +153,17 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ message: 'Book not found' }, { status: 404 });
     }
 
-    // Delete the book record from the database
     await prisma.book.delete({
       where: { id: Number(id) },
     });
 
-    // Delete the cover image if it exists
     if (existingBook.coverImage) {
-      const oldImagePath = path.join(process.cwd(), existingBook.coverImage);
+      const oldImagePath = path.join(
+        process.cwd(),
+        '/public',
+        existingBook.coverImage
+      );
+      console.log('Attempting to delete image at:', oldImagePath); // Add logging
       await deleteImage(oldImagePath);
     }
 

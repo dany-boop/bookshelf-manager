@@ -10,36 +10,36 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Book } from '@prisma/client';
-// import { DownloadTableExcel } from 'react-export-table-to-excel';
-
-// import jsPDF from 'jspdf';
-// import 'jspdf-autotable';
-// import autoTable from 'jspdf-autotable';
+import SearchBooks from '../DebounceSearch';
+import { useDispatch } from 'react-redux';
+import { deleteBook } from '@/store/reducers/bookSlice';
+import { AppDispatch } from '@/store/store';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 type Props = {
   books: Book[];
   loading?: boolean;
   title?: string;
   openForm: (book?: Book | null | undefined) => void;
+  userId: string | undefined;
 };
 
-const BooksTable: FC<Props> = ({ books, loading, title, openForm }) => {
+const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
   const tableRef = useRef(null);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Book;
     direction: 'asc' | 'desc';
   } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({
-    namaGrup: '',
-    saldoTahunIni: '',
-    saldoProyeksi: '',
-    saldoTahunLalu: '',
-    saldoPencapaian: '',
-  });
 
-  const handleColumnFilterChange = (key: string, value: string) => {
-    setColumnFilters({ ...columnFilters, [key]: value });
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleDelete = (bookId: number) => {
+    dispatch(deleteBook(bookId));
   };
 
   const handleSort = (key: keyof Book) => {
@@ -80,143 +80,42 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm }) => {
     )
   );
 
-  // const handlePdfExport = () => {
-  //   const pageWidth = 297; // A4 width in mm
-  //   const pageHeight = 210; // A4 height in mm
-  //   const customDoc = new jsPDF({
-  //     orientation: 'landscape', // Landscape orientation for wider tables
-  //     unit: 'mm',
-  //     format: [pageWidth + 50, pageHeight], // Increased width (50 mm extra)
-  //     hotfixes: ['px_scaling'], // To fix any scaling issues
-  //   });
-
-  //   const accentColor = getComputedStyle(document.documentElement)
-  //     .getPropertyValue('--color-accent')
-  //     .trim();
-  //   const rgbColor = convertCssColorToRgb(accentColor);
-
-  // Define headers
-
-  //   // Add data to PDF
-  //   const name = `Table Rekap Perbandingan Laba Rugi ${title}`;
-  //   customDoc.text(name, 14, 15);
-
-  //   // Add data to PDF with enhanced styling
-  //   autoTable(customDoc, {
-  //     head: [tableColumn, subHeader],
-  //     body: tableRows,
-  //     startY: 30,
-  //     theme: 'striped',
-  //     headStyles: {
-  //       fillColor: rgbColor || [34, 34, 34],
-  //       textColor: [255, 255, 255],
-  //       halign: 'center',
-  //       cellPadding: 5,
-  //     },
-  //     styles: {
-  //       cellPadding: 5,
-  //       fontSize: 10,
-  //       valign: 'middle',
-  //       halign: 'center',
-  //       minCellHeight: 10,
-  //     },
-  //     columnStyles: {
-  //       0: { cellWidth: 50, overflow: 'linebreak' }, // Wrap header, no wrap for data
-  //       1: { cellWidth: 40 },
-  //       2: { cellWidth: 40 },
-  //       3: { cellWidth: 40 },
-  //       4: { cellWidth: 40 },
-  //       5: { cellWidth: 30 },
-  //       6: { cellWidth: 40 },
-  //       7: { cellWidth: 30 },
-  //     },
-  //     didParseCell: (data) => {
-  //       // Prevent wrapping in data rows
-  //       if (data.row.index > 0) {
-  //         data.cell.styles.overflow = 'linebreak'; // No wrap for data cells
-  //         data.cell.styles.cellWidth = 'auto'; // Automatic width for data cells
-  //       }
-  //     },
-  //   });
-
-  //   customDoc.save(`table-rekap-perbandingan-laba-rugi-${title}.pdf`);
-  // };
-
-  // const handlePrint = () => {
-  //   const printContent = tableRef.current?.innerHTML;
-  //   const windowPrint = window.open("", "_blank");
-  //   windowPrint.document?.write(`
-  //     <html>
-  //       <head>
-  //         <title>Print Table</title>
-  //         <style>
-  //           table { width: 100%; border-collapse: collapse; }
-  //           th, td { border: 1px solid black; padding: 8px; text-align: center; }
-  //         </style>
-  //       </head>
-  //       <body onload="window.print();window.close()">
-  //         ${printContent}
-  //       </body>
-  //     </html>
-  //   `);
-  //   windowPrint.document.close();
-  //   windowPrint.focus();
-  // };
-
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case 'FINISHED':
+        return 'bg-green-500/30 text-green-500';
+      case 'NOT_STARTED':
+        return 'bg-yellow-500/30 text-yellow-500';
+      case 'READING':
+        return 'bg-blue-500/30 text-blue-500';
+      default:
+        return 'bg-gray-500/30 text-yellow-500';
+    }
+  };
   return (
-    <div className="p-5 ">
-      <div className="flex justify-between">
-        {/* <Popover>
-          <PopoverTrigger className="hover:bg-[--bg-tertiary] transition-all duration-75 ease-in-out p-3 rounded-lg">
+    <div className="rounded-2xl my-10 border bg-gradient-to-tr from-zinc-50 to-stone-50  dark:from-zinc-800 dark:to-stone-800 dark:border-0 shadow-md py-10 px-5">
+      <div className="flex justify-between my-5">
+        <h1 className="mx-5 text-lg font-semibold">Book Table</h1>
+        <div className="flex gap-3">
+          <button
+            onClick={() => openForm()} // Open the form for adding a new book
+            className=" "
+          >
             <Icon
-              icon="solar:folder-with-files-line-duotone"
-              width={30}
-              className="text-[--text-color]"
+              icon="solar:add-circle-bold-duotone"
+              width={40}
+              className=" text-green-600 hover:text-green-500"
             />
-          </PopoverTrigger>
-          <PopoverContent className="bg-[--bg-container]">
-            <DownloadTableExcel
-              filename={`table-rekap-perbandingan-laba-rugi-${title}`}
-              sheet="users"
-              currentTableRef={tableRef.current}
-            >
-              <button className="text-[--text-color] hover:bg-[--bg-tertiary] w-full rounded-xl p-2 transition-all duration-300 flex gap-5">
-                <Icon
-                  icon="ri:file-excel-2-line"
-                  width={30}
-                  className="text-green-600"
-                />
-                <span className="my-auto">Export ke Excel</span>
-              </button>
-            </DownloadTableExcel>
-            <button
-              onClick={handlePdfExport}
-              className="text-[--text-color] hover:bg-[--bg-tertiary] w-full rounded-xl p-2 transition-all duration-300 flex gap-5"
-            >
-              <Icon
-                icon="ri:file-pdf-2-line"
-                width={30}
-                className="text-red-600"
-              />
-              <span className="my-auto">Export ke Pdf</span>
-            </button>
-          </PopoverContent>
-        </Popover> */}
-
-        <input
-          type="text"
-          placeholder="Search..."
-          className="border p-2 rounded"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+          </button>
+          <SearchBooks userId={userId} />
+        </div>
       </div>
-      <Table ref={tableRef}>
-        <TableHeader>
+      <Table ref={tableRef} className="overflow-x-scroll ">
+        <TableHeader className="border-b-2 dark:border-zinc-600 ">
           <TableRow>
             <TableCell
               onClick={() => handleSort('title')}
-              className="cursor-pointer"
+              className="cursor-pointer font-bold"
             >
               Title{' '}
               {sortConfig?.key === 'title'
@@ -227,7 +126,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm }) => {
             </TableCell>
             <TableCell
               onClick={() => handleSort('author')}
-              className="cursor-pointer"
+              className="cursor-pointer font-bold"
             >
               Author{' '}
               {sortConfig?.key === 'author'
@@ -238,7 +137,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm }) => {
             </TableCell>
             <TableCell
               onClick={() => handleSort('category')}
-              className="cursor-pointer"
+              className="cursor-pointer font-bold"
             >
               Category{' '}
               {sortConfig?.key === 'category'
@@ -249,7 +148,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm }) => {
             </TableCell>
             <TableCell
               onClick={() => handleSort('status')}
-              className="cursor-pointer"
+              className="cursor-pointer font-bold"
             >
               Status{' '}
               {sortConfig?.key === 'status'
@@ -258,24 +157,71 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm }) => {
                   : '↓'
                 : ''}
             </TableCell>
-            <TableCell className="cursor-pointer">Action</TableCell>
+            <TableCell className="cursor-pointer font-bold">Action</TableCell>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredBooks.map((book) => (
-            <TableRow key={book.id}>
+            <TableRow
+              key={book.id}
+              className="border-b border-dashed dark:border-zinc-600"
+            >
               <TableCell>{book.title}</TableCell>
               <TableCell>{book.author}</TableCell>
-              <TableCell>{book.category}</TableCell>
-              <TableCell>{book.status}</TableCell>
-              <TableCell>
-                <Button
-                  onClick={() => openForm(book)} // Open the form with the book to edit
-                  className="px-4 py-2 bg-yellow-500 text-white rounded"
+              <TableCell className="">
+                <p className="flex-justify-center rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
+                  {book.category}
+                </p>
+              </TableCell>
+
+              <TableCell className="flex justify-center">
+                <p
+                  className={`${getStatusClass(
+                    book.status
+                  )} rounded-full text-md p-1 px-2 shadow-md`}
                 >
-                  Edit
-                </Button>
-                <Button></Button>
+                  {book.status}
+                </p>
+              </TableCell>
+
+              <TableCell className="">
+                <Popover>
+                  <PopoverTrigger>
+                    <Icon
+                      icon="pepicons-pencil:dots-y"
+                      width={30}
+                      className="text-foreground"
+                    />
+                  </PopoverTrigger>
+                  <PopoverContent className="flex-col gap-2 w-fit bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
+                    <Button
+                      onClick={() => openForm(book)} // Open the form with the book to edit
+                      className="flex justify-start px-2 py-2 w-full"
+                    >
+                      <Icon
+                        icon="solar:pen-new-round-linear"
+                        width={100}
+                        className="text-yellow-500 text-lg "
+                      />
+                      <span className=" text-zinc-900 dark:text-zinc-50  ">
+                        Edit
+                      </span>
+                    </Button>
+                    <Button
+                      className="flex justify-start px-2 py-2 w-full"
+                      onClick={() => handleDelete(book.id)}
+                    >
+                      <Icon
+                        icon="solar:trash-bin-trash-bold-duotone"
+                        width={100}
+                        className=" text-red-500 text-lg "
+                      />
+                      <span className=" text-zinc-900 dark:text-zinc-50  ">
+                        Delete
+                      </span>
+                    </Button>
+                  </PopoverContent>
+                </Popover>
               </TableCell>
             </TableRow>
           ))}
