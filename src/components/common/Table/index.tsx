@@ -82,11 +82,11 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'FINISHED':
+      case 'finished':
         return 'bg-green-500/30 text-green-500';
-      case 'NOT_STARTED':
+      case 'unread':
         return 'bg-yellow-500/30 text-yellow-500';
-      case 'READING':
+      case 'reading':
         return 'bg-blue-500/30 text-blue-500';
       default:
         return 'bg-gray-500/30 text-yellow-500';
@@ -96,7 +96,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
     <div className="rounded-2xl my-10 border bg-gradient-to-tr from-zinc-50 to-stone-50  dark:from-zinc-800 dark:to-stone-800 dark:border-0 shadow-md py-10 px-5">
       <div className="flex justify-between my-5">
         <h1 className="mx-5 text-lg font-semibold">Book Table</h1>
-        <div className="flex gap-3">
+        <div className="flex gap-3 ">
           <button
             onClick={() => openForm()} // Open the form for adding a new book
             className=" "
@@ -115,47 +115,71 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
           <TableRow>
             <TableCell
               onClick={() => handleSort('title')}
-              className="cursor-pointer font-bold"
+              className="cursor-pointer font-bold "
             >
-              Title{' '}
-              {sortConfig?.key === 'title'
-                ? sortConfig.direction === 'asc'
-                  ? '↑'
-                  : '↓'
-                : ''}
+              <span className="flex gap-3 justify-center">
+                Title
+                {sortConfig?.key === 'title' ? (
+                  sortConfig.direction === 'asc' ? (
+                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
+                  ) : (
+                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
+                  )
+                ) : (
+                  ''
+                )}
+              </span>
             </TableCell>
             <TableCell
               onClick={() => handleSort('author')}
               className="cursor-pointer font-bold"
             >
-              Author{' '}
-              {sortConfig?.key === 'author'
-                ? sortConfig.direction === 'asc'
-                  ? '↑'
-                  : '↓'
-                : ''}
+              <span className="flex gap-3 justify-center">
+                Author{' '}
+                {sortConfig?.key === 'author' ? (
+                  sortConfig.direction === 'asc' ? (
+                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
+                  ) : (
+                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
+                  )
+                ) : (
+                  ''
+                )}
+              </span>
             </TableCell>
             <TableCell
               onClick={() => handleSort('category')}
               className="cursor-pointer font-bold"
             >
-              Category{' '}
-              {sortConfig?.key === 'category'
-                ? sortConfig.direction === 'asc'
-                  ? '↑'
-                  : '↓'
-                : ''}
+              <span className="flex gap-3 justify-center">
+                Category{' '}
+                {sortConfig?.key === 'category' ? (
+                  sortConfig.direction === 'asc' ? (
+                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
+                  ) : (
+                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
+                  )
+                ) : (
+                  ''
+                )}
+              </span>
             </TableCell>
             <TableCell
               onClick={() => handleSort('status')}
               className="cursor-pointer font-bold"
             >
-              Status{' '}
-              {sortConfig?.key === 'status'
-                ? sortConfig.direction === 'asc'
-                  ? '↑'
-                  : '↓'
-                : ''}
+              <span className="flex gap-3 justify-center">
+                Status{' '}
+                {sortConfig?.key === 'status' ? (
+                  sortConfig.direction === 'asc' ? (
+                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
+                  ) : (
+                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
+                  )
+                ) : (
+                  ''
+                )}
+              </span>
             </TableCell>
             <TableCell className="cursor-pointer font-bold">Action</TableCell>
           </TableRow>
@@ -166,8 +190,12 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
               key={book.id}
               className="border-b border-dashed dark:border-zinc-600"
             >
-              <TableCell>{book.title}</TableCell>
-              <TableCell>{book.author}</TableCell>
+              <TableCell>
+                <span className="flex justify-center">{book.title}</span>
+              </TableCell>
+              <TableCell>
+                <span className="flex justify-center">{book.author}</span>
+              </TableCell>
               <TableCell className="">
                 <p className="flex-justify-center rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
                   {book.category}

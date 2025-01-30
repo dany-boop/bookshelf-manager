@@ -45,15 +45,15 @@ const DashboardContainer: FC = (props: Props) => {
       <div className="mb-10">
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="p-5 flex-col bg-zinc-100 dark:bg-stone-800 shadow-md rounded-lg border dark:border-0">
+            <div className="p-5 flex-col bg-zinc-100 dark:bg-stone-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0">
               <h1 className="font-bold">Total Books</h1>
               <p className="mt-3">{totalBooks}</p>
             </div>
-            <div className="p-5 flex-col bg-zinc-100 dark:bg-stone-800 shadow-md rounded-lg border dark:border-0">
+            <div className="p-5 flex-col bg-zinc-100 dark:bg-stone-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0">
               <h1 className="font-bold">Finished Reading</h1>
               <p className="mt-3">{finishedBooks}</p>
             </div>
-            <div className="p-5 flex-col bg-zinc-100 dark:bg-stone-800 shadow-md rounded-lg border dark:border-0">
+            <div className="p-5 flex-col bg-zinc-100 dark:bg-stone-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0">
               <h1 className="font-bold">On Going</h1>
               <p className="mt-3">{readBooks}</p>
             </div>
@@ -80,7 +80,7 @@ const DashboardContainer: FC = (props: Props) => {
 
           {isFormOpen && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-              <div className="bg-white p-6 rounded shadow-lg w-96">
+              <div className=" ">
                 <AddBookForm book={selectedBook} onClose={closeForm} />
               </div>
             </div>

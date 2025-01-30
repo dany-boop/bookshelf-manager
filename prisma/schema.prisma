@@ -24,25 +24,30 @@ model User {
   Book      Book[]
 }
 
-model Book {
-  id          Int        @id @default(autoincrement())
-  userId      String // Foreign key to User
-  title       String
-  category    String?
-  description String?
-  author      String
-  pages       Int?
-  language    String?
-  status      BookStatus // e.g., "reading", "finished"
-  coverImage  String? // New field for book cover image URL
-  user        User       @relation(fields: [userId], references: [id])
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+enum BookStatus {
+  unread
+  reading
+  finished
+  deleted
 }
 
-enum BookStatus {
-  NOT_STARTED
-  READING
-  FINISHED
-  DELETED
+model Book {
+  id                Int        @id @default(autoincrement())
+  userId            String // Foreign key to User
+  title             String
+  category          String?
+  description       String?
+  author            String
+  pages             Int?
+  language          String?
+  isbn              String?
+  publication_date  DateTime?
+  publication_place String?
+  status            BookStatus // e.g., "reading", "finished"
+  coverImage        String? // New field for book cover image URL
+  pdf               String?
+  publisher         String?
+  user              User       @relation(fields: [userId], references: [id])
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 }

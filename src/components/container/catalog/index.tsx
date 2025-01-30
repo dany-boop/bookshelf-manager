@@ -53,7 +53,7 @@ const CatalogContainer = (props: Props) => {
           {catalog.map((book) => (
             <div
               key={book.id}
-              className="bg-white shadow-md rounded-lg overflow-hidden border"
+              className="border bg-gradient-to-tr from-zinc-50 to-stone-50  dark:from-zinc-800 dark:to-stone-800 dark:border-0 dark:shadow-md shadow-sm rounded-lg overflow-hidden "
             >
               <div className="flex justify-center">
                 <Image

@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
   const limit = parseInt(searchParams.get('limit') || '15', 15);
   const category = searchParams.get('category');
   const status = searchParams.get('status');
+  const isbn = searchParams.get('isbn');
+  const publication_place = searchParams.get('publication_place');
+  const publisher = searchParams.get('publisher');
   const title = searchParams.get('title');
   const language = searchParams.get('language');
   const userId = searchParams.get('userId');
@@ -30,6 +33,13 @@ export async function GET(req: NextRequest) {
   const where: any = { userId };
 
   if (category) where.category = { contains: category, mode: 'insensitive' };
+  if (isbn) where.isbn = { contains: isbn, mode: 'insensitive' };
+  if (publisher) where.publisher = { contains: publisher, mode: 'insensitive' };
+  if (publication_place)
+    where.publication_place = {
+      contains: publication_place,
+      mode: 'insensitive',
+    };
   if (status) where.status = status;
   if (title) where.title = { contains: title, mode: 'insensitive' };
   if (language) where.language = { contains: language, mode: 'insensitive' };
@@ -38,6 +48,8 @@ export async function GET(req: NextRequest) {
       { title: { contains: query.toLowerCase() } },
       { author: { contains: query.toLowerCase() } },
       { category: { contains: query.toLowerCase() } },
+      { isbn: { contains: query.toLowerCase() } },
+      { language: { contains: query.toLowerCase() } },
     ];
   }
 
@@ -51,10 +63,10 @@ export async function GET(req: NextRequest) {
 
     const totalBooks = await prisma.book.count({ where });
     const finishedBooks = await prisma.book.count({
-      where: { status: 'FINISHED', userId },
+      where: { status: 'finished', userId },
     });
     const readBooks = await prisma.book.count({
-      where: { status: 'READING', userId },
+      where: { status: 'reading', userId },
     });
 
     return NextResponse.json({
@@ -98,6 +110,9 @@ export async function POST(req: NextRequest) {
     const userId = formData.get('userId')?.toString();
     const title = formData.get('title')?.toString();
     const category = formData.get('category')?.toString();
+    const isbn = formData.get('isbn')?.toString();
+    const publisher = formData.get('publisher')?.toString();
+    const publication_place = formData.get('publication_place')?.toString();
     const description = formData.get('description')?.toString();
     const author = formData.get('author')?.toString();
     const pages = parseInt(formData.get('pages')?.toString() || '0', 15);
@@ -145,6 +160,9 @@ export async function POST(req: NextRequest) {
         author,
         pages,
         language,
+        isbn,
+        publisher,
+        publication_place,
         status, // Ensure enum compliance
         coverImage,
       },

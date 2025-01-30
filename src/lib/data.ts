@@ -15,3 +15,15 @@ export const menu: Menu[] = [
   { id: 2, name: 'Catalog', url: '/catalog', icon: 'ph:books-duotone' },
   { id: 3, name: 'Profile', url: '/profile', icon: 'solar:user-bold-duotone' },
 ];
+
+export const categories = [
+  'Fiction',
+  'Non-Fiction',
+  'Science',
+  'History',
+  'Fantasy',
+  'Mystery',
+  'Biography',
+];
+
+export const languages = ['English', 'Spanish', 'French', 'German', 'Chinese'];
