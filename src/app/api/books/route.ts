@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BookStatus, PrismaClient } from '@prisma/client';
 import path from 'path';
-import { writeFile } from 'fs/promises';
 import { nanoid } from 'nanoid';
 import sharp from 'sharp';
+// import { middleware } from '@/middleware';
 
 const prisma = new PrismaClient();
+
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads');
 
 export async function GET(req: NextRequest) {
@@ -32,7 +33,14 @@ export async function GET(req: NextRequest) {
 
   const where: any = { userId };
 
-  if (category) where.category = { contains: category, mode: 'insensitive' };
+  if (category) {
+    where.OR = category.split(',').map((cat) => ({
+      category: { has: cat.trim() },
+    }));
+  }
+
+  // if (category) where.category = { contains: category, mode: 'insensitive' };
+
   if (isbn) where.isbn = { contains: isbn, mode: 'insensitive' };
   if (publisher) where.publisher = { contains: publisher, mode: 'insensitive' };
   if (publication_place)
@@ -40,16 +48,14 @@ export async function GET(req: NextRequest) {
       contains: publication_place,
       mode: 'insensitive',
     };
-  if (status) where.status = status;
+  if (status) where.status = status || undefined;
   if (title) where.title = { contains: title, mode: 'insensitive' };
-  if (language) where.language = { contains: language, mode: 'insensitive' };
+  if (language) where.language = { contains: language };
   if (query) {
     where.OR = [
       { title: { contains: query.toLowerCase() } },
       { author: { contains: query.toLowerCase() } },
-      { category: { contains: query.toLowerCase() } },
       { isbn: { contains: query.toLowerCase() } },
-      { language: { contains: query.toLowerCase() } },
     ];
   }
 
@@ -70,7 +76,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({
-      books,
+      books: books ?? [],
       totalBooks,
       readBooks,
       finishedBooks,

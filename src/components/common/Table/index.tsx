@@ -80,6 +80,8 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
     )
   );
 
+  console.log(filteredBooks.length);
+
   const getStatusClass = (status: string) => {
     switch (status) {
       case 'finished':
@@ -185,74 +187,84 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredBooks.map((book) => (
-            <TableRow
-              key={book.id}
-              className="border-b border-dashed dark:border-zinc-600"
-            >
-              <TableCell>
-                <span className="flex justify-center">{book.title}</span>
-              </TableCell>
-              <TableCell>
-                <span className="flex justify-center">{book.author}</span>
-              </TableCell>
-              <TableCell className="">
-                <p className="flex-justify-center rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
-                  {book.category}
-                </p>
-              </TableCell>
+          {filteredBooks.length > 0 ? (
+            filteredBooks.map((book) => (
+              <TableRow
+                key={book.id}
+                className="border-b border-dashed dark:border-zinc-600"
+              >
+                <>
+                  <TableCell>
+                    <span className="flex justify-center">{book.title}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="flex justify-center">{book.author}</span>
+                  </TableCell>
+                  <TableCell className="">
+                    <p className="flex-justify-center rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
+                      {book.category}
+                    </p>
+                  </TableCell>
 
-              <TableCell className="flex justify-center">
-                <p
-                  className={`${getStatusClass(
-                    book.status
-                  )} rounded-full text-md p-1 px-2 shadow-md`}
-                >
-                  {book.status}
-                </p>
-              </TableCell>
+                  <TableCell className="flex justify-center">
+                    <p
+                      className={`${getStatusClass(
+                        book.status
+                      )} rounded-full text-md p-1 px-2 shadow-md`}
+                    >
+                      {book.status}
+                    </p>
+                  </TableCell>
 
-              <TableCell className="">
-                <Popover>
-                  <PopoverTrigger>
-                    <Icon
-                      icon="pepicons-pencil:dots-y"
-                      width={30}
-                      className="text-foreground"
-                    />
-                  </PopoverTrigger>
-                  <PopoverContent className="flex-col gap-2 w-fit bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
-                    <Button
-                      onClick={() => openForm(book)} // Open the form with the book to edit
-                      className="flex justify-start px-2 py-2 w-full"
-                    >
-                      <Icon
-                        icon="solar:pen-new-round-linear"
-                        width={100}
-                        className="text-yellow-500 text-lg "
-                      />
-                      <span className=" text-zinc-900 dark:text-zinc-50  ">
-                        Edit
-                      </span>
-                    </Button>
-                    <Button
-                      className="flex justify-start px-2 py-2 w-full"
-                      onClick={() => handleDelete(book.id)}
-                    >
-                      <Icon
-                        icon="solar:trash-bin-trash-bold-duotone"
-                        width={100}
-                        className=" text-red-500 text-lg "
-                      />
-                      <span className=" text-zinc-900 dark:text-zinc-50  ">
-                        Delete
-                      </span>
-                    </Button>
-                  </PopoverContent>
-                </Popover>
+                  <TableCell className="">
+                    <Popover>
+                      <PopoverTrigger>
+                        <Icon
+                          icon="pepicons-pencil:dots-y"
+                          width={30}
+                          className="text-foreground"
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent className="flex-col gap-2 w-fit bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
+                        <Button
+                          onClick={() => openForm(book)} // Open the form with the book to edit
+                          className="flex justify-start px-2 py-2 w-full"
+                        >
+                          <Icon
+                            icon="solar:pen-new-round-linear"
+                            width={100}
+                            className="text-yellow-500 text-lg "
+                          />
+                          <span className=" text-zinc-900 dark:text-zinc-50  ">
+                            Edit
+                          </span>
+                        </Button>
+                        <Button
+                          className="flex justify-start px-2 py-2 w-full"
+                          onClick={() => handleDelete(book.id)}
+                        >
+                          <Icon
+                            icon="solar:trash-bin-trash-bold-duotone"
+                            width={100}
+                            className=" text-red-500 text-lg "
+                          />
+                          <span className=" text-zinc-900 dark:text-zinc-50  ">
+                            Delete
+                          </span>
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
+                  </TableCell>
+                </>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center w-full mt-5">
+                You don't have any book
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>

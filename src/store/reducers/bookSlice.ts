@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Book } from '@prisma/client';
 
 interface BookFormState {
@@ -18,7 +18,11 @@ export interface BooksState {
     currentPage: number;
     totalPages: number;
   };
-
+  filters: {
+    category: string[];
+    status: string;
+    language: string;
+  };
   addBookState: BookFormState;
   editBookState: BookFormState;
   deleteBookState: BookFormState;
@@ -34,6 +38,11 @@ const initialState: BooksState = {
   pagination: {
     currentPage: 1,
     totalPages: 1,
+  },
+  filters: {
+    category: [],
+    status: '',
+    language: '',
   },
   addBookState: {
     loading: false,
@@ -52,15 +61,6 @@ const initialState: BooksState = {
   },
 };
 
-interface BookSearchResponse {
-  books: Book[];
-  totalBooks: number;
-  finishedBooks: number;
-  readBooks: number;
-  totalPages: number;
-  currentPage: number;
-}
-
 // Define the return type of the async thunk
 export const fetchBooksData = createAsyncThunk<
   {
@@ -73,15 +73,19 @@ export const fetchBooksData = createAsyncThunk<
   {
     page: number;
     query?: string;
-    filters?: { category?: string; status?: string };
+    filters?: { category?: string[]; status?: string; language?: string };
     userId: string;
   }
 >('books/fetchBooksData', async ({ page, filters, userId, query }) => {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    userId,
-    ...filters,
-  });
+  const params = new URLSearchParams();
+  params.set('page', page.toString());
+  params.set('userId', userId);
+  if (query) params.set('query', query);
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.language) params.set('language', filters.language);
+  if (filters?.category?.length)
+    params.set('category', filters.category.join(','));
+
   if (query) params.set('query', query);
   const response = await fetch(`/api/books?${params.toString()}`);
   // const response = await fetch(`/api/books?page=${page}`);
@@ -138,6 +142,21 @@ const booksSlice = createSlice({
   reducers: {
     setCurrentPage: (state, action) => {
       state.pagination.currentPage = action.payload;
+    },
+    setFilters: (
+      state,
+      action: PayloadAction<{
+        category?: string[];
+        status?: string;
+        language?: string;
+      }>
+    ) => {
+      if (action.payload.category !== undefined)
+        state.filters.category = action.payload.category;
+      if (action.payload.language !== undefined)
+        state.filters.language = action.payload.language;
+      if (action.payload.status !== undefined)
+        state.filters.status = action.payload.status;
     },
     resetAddBookState: (state) => {
       state.addBookState = { loading: false, success: false, error: null };
@@ -233,6 +252,10 @@ const booksSlice = createSlice({
   },
 });
 
-export const { setCurrentPage, resetAddBookState, resetEditBookState } =
-  booksSlice.actions;
+export const {
+  setFilters,
+  setCurrentPage,
+  resetAddBookState,
+  resetEditBookState,
+} = booksSlice.actions;
 export default booksSlice.reducer;

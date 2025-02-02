@@ -1,35 +1,70 @@
+// import { NextRequest, NextResponse } from 'next/server';
+
+// export function middleware(request: NextRequest) {
+//   const url = new URL(request.url);
+//   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+
+//   // Exclude authentication routes from token validation
+//   if (
+//     url.pathname.startsWith('/auth/login') ||
+//     url.pathname.startsWith('/api/auth/login') ||
+//     url.pathname.startsWith('/api/auth/register')
+//   ) {
+//     return NextResponse.next();
+//   } else if (!token) {
+//     return NextResponse.redirect(new URL('/auth/login', request.url));
+//   }
+
+//   // // If no token is found, return an unauthorized response
+//   // if (!token) {
+//   // }
+
+//   return NextResponse.next();
+// }
+
+// // Apply middleware to specific paths
+// export const config = {
+//   matcher: ['/dashboard', '/profile', '/api/books/:path*'], // Protect pages & API
+// };
+
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+  const url = request.nextUrl.clone();
+  const token = request.cookies.get('token')?.value; // Get token from cookies
 
-  // Exclude the login route from token validation
-  const url = new URL(request.url);
-  if (url.pathname === '/api/auth/login' || '/api/auth/register') {
-    return NextResponse.next();
-  }
-  if (!token) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
+  console.log('Current Path:', url.pathname);
+  console.log('Token:', token);
 
-  const protectedRoutes = ['/dashboard', '/profile']; // Add protected routes here
-  const isAuthenticated =
-    token && JSON.parse(token)?.auth?.isAuthenticated === 'true';
+  // ✅ Allow access to authentication routes
   if (
-    protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
+    url.pathname.startsWith('/auth/login') ||
+    url.pathname.startsWith('/api/auth/login') ||
+    url.pathname.startsWith('/api/auth/register')
   ) {
-    if (!isAuthenticated) {
-      const loginUrl = new URL('/auth/login', request.url);
-      return NextResponse.redirect(loginUrl);
+    // If user is already authenticated, redirect them away from the login page
+    if (token) {
+      console.log('User is already logged in, redirecting to dashboard...');
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
-  }
-  try {
     return NextResponse.next();
-  } catch (error) {
-    return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
   }
+
+  // ❌ If no token and accessing a protected route, redirect to login
+  const protectedRoutes = ['/dashboard', '/profile', '/api/books'];
+  if (
+    !token &&
+    protectedRoutes.some((route) => url.pathname.startsWith(route))
+  ) {
+    console.log('User is not authenticated, redirecting to login...');
+    return NextResponse.redirect(new URL('/auth/login', request.url));
+  }
+
+  console.log('User is authenticated, allowing access...');
+  return NextResponse.next();
 }
 
+// ✅ Apply middleware only to protected routes
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: ['/dashboard', '/profile', '/api/books/:path*'],
 };

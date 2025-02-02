@@ -28,6 +28,7 @@ const DashboardContainer: FC = (props: Props) => {
   useEffect(() => {
     if (userId) {
       dispatch(fetchBooksData({ page: pagination.currentPage, userId })); // Pass userId along with page
+    } else {
     }
   }, [dispatch, pagination.currentPage, userId]);
 

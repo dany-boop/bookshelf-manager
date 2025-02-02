@@ -20,7 +20,7 @@ import {
 
 interface MultiSelectComboboxProps {
   options: string[];
-  value: string[];
+  value?: string[];
   onChange: (value: string[]) => void;
   placeholder: string;
 }
@@ -35,17 +35,36 @@ interface SingleSelectComboboxProps {
 // MultiSelect Combobox
 export function MultiSelectCombobox({
   options,
-  value,
+  value = [],
   onChange,
   placeholder,
 }: MultiSelectComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
-  const handleSelect = (selectedValue: any) => {
-    const newValue = value.includes(selectedValue)
-      ? value.filter((v) => v !== selectedValue)
-      : [...value, selectedValue];
+  // const handleSelect = (selectedValue: any) => {
+  //   const newValue = value?.includes(selectedValue)
+  //     ? value?.filter((v) => v !== selectedValue)
+  //     : [...value, selectedValue];
+  //   onChange(newValue);
+  // };
+  const handleSelect = (selectedValue: string) => {
+    const normalizedOption = options.find(
+      (opt) => opt.toLowerCase() === selectedValue.toLowerCase()
+    );
+
+    if (!normalizedOption) return; // Prevent invalid selections
+
+    const newValue = value?.includes(normalizedOption)
+      ? value?.filter((v) => v !== normalizedOption)
+      : [...value, normalizedOption];
+
     onChange(newValue);
+  };
+
+  // Clear All Selections
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange([]);
   };
 
   return (
@@ -57,8 +76,18 @@ export function MultiSelectCombobox({
           aria-expanded={open}
           className="w-full justify-between overflow-hidden"
         >
-          {value.length > 0 ? value.join(', ') : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          {value.length > 0 ? value?.join(', ') : placeholder}
+          <div className="flex items-center gap-2">
+            {value.length > 0 && (
+              <button
+                className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100"
+                onClick={handleClear}
+              >
+                X
+              </button>
+            )}
+            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+          </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
@@ -72,7 +101,7 @@ export function MultiSelectCombobox({
                   <Check
                     className={cn(
                       'mr-2 h-4 w-4',
-                      value.includes(option) ? 'opacity-100' : 'opacity-0'
+                      value?.includes(option) ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                   {option}
@@ -93,7 +122,10 @@ export function SingleSelectCombobox({
   placeholder,
 }: SingleSelectComboboxProps) {
   const [open, setOpen] = React.useState(false);
-
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange('');
+  };
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -118,7 +150,8 @@ export function SingleSelectCombobox({
                   key={option}
                   onSelect={() => {
                     onChange(option);
-                    setOpen(false);
+                    console.log('option', option);
+                    // setOpen(false);
                   }}
                 >
                   <Check

@@ -1,9 +1,20 @@
 'use client';
 import SearchBooks from '@/components/common/DebounceSearch';
 import CustomPagination from '@/components/ui/customPagination';
-import { fetchBooksData } from '@/store/reducers/bookSlice';
+import {
+  MultiSelectCombobox,
+  SingleSelectCombobox,
+} from '@/components/ui/MultiSelect';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
+import { categories, languages } from '@/lib/data';
+import { fetchBooksData, setFilters } from '@/store/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/store/store';
-import { Book } from '@prisma/client';
+import { Book, BookStatus } from '@prisma/client';
 import Image from 'next/image';
 import React, { Suspense, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,12 +36,39 @@ const CatalogContainer = (props: Props) => {
     pagination,
   } = useSelector((state: RootState) => state.books);
   const userId = useSelector((state: RootState) => state.auth.user?.id);
+  const { filters } = useSelector((state: RootState) => state.books);
+
+  // useEffect(() => {
+  //   if (userId) {
+  //     dispatch(fetchBooksData({ page: pagination.currentPage, userId })); // Fetch books with pagination
+  //   }
+  // }, [dispatch, pagination.currentPage, userId]);
 
   useEffect(() => {
     if (userId) {
-      dispatch(fetchBooksData({ page: pagination.currentPage, userId })); // Fetch books with pagination
+      dispatch(
+        fetchBooksData({
+          page: pagination.currentPage,
+          userId,
+          filters: {
+            // category: filters.category,
+            status: filters.status,
+            language: filters.language,
+          },
+        })
+      );
     }
-  }, [dispatch, pagination.currentPage, userId]);
+  }, [dispatch, filters, userId, pagination.currentPage]);
+
+  const filteredBooks = catalog.filter((book) => {
+    if (filters.category.length === 0) return true; // No category filter applied
+    const bookCategories = book.category
+      ?.split(',')
+      .map((c) => c.trim().toLowerCase());
+    return filters.category.some((selected) =>
+      bookCategories?.includes(selected.toLowerCase())
+    );
+  });
 
   const toggleCardDetails = (bookId: number) => {
     setExpandedBookId((prevId) => (prevId === bookId ? null : bookId)); // Toggle book details
@@ -48,9 +86,51 @@ const CatalogContainer = (props: Props) => {
   return (
     <main>
       <div className="">
-        <SearchBooks userId={userId} className="w-80 mb-10" />
+        <div className="">
+          <SearchBooks userId={userId} className="w-80 mb-10" />
+          <div className="">
+            <MultiSelectCombobox
+              options={categories}
+              value={filters.category}
+              onChange={(selected) =>
+                dispatch(setFilters({ category: selected }))
+              }
+              placeholder="Select Categories"
+            />
+
+            <SingleSelectCombobox
+              options={languages}
+              value={filters.language}
+              onChange={(selected) => {
+                dispatch(setFilters({ language: selected }));
+              }}
+              placeholder="Select a Language"
+            />
+
+            <Select
+              value={filters.status || 'none'}
+              onValueChange={(status) =>
+                dispatch(
+                  setFilters({ status: status === 'none' ? '' : status })
+                )
+              }
+            >
+              <SelectTrigger className="w-40">
+                {filters.status ? filters.status : 'Select Status'}
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {Object.values(BookStatus).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-16">
-          {catalog.map((book) => (
+          {filteredBooks.map((book: any) => (
             <div
               key={book.id}
               className="border bg-gradient-to-tr from-zinc-50 to-stone-50  dark:from-zinc-800 dark:to-stone-800 dark:border-0 dark:shadow-md shadow-sm rounded-lg overflow-hidden "

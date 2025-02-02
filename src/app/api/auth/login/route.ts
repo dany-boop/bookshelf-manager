@@ -26,11 +26,23 @@ export async function POST(req: Request) {
 
     const token = generateToken(user.id, user.username);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       token,
       user,
       message: 'Login successful',
     });
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    });
+
+    return response;
+    // return NextResponse.json({
+    //   token,
+    //   user,
+    //   message: 'Login successful',
+    // });
   } catch (error) {
     return NextResponse.json(
       { error: 'Something went wrong' },

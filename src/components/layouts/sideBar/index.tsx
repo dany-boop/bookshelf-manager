@@ -43,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
 
   return (
     <nav className="w-full overflow-hidden border border-1 ">
-      <div className="flex justify-between items-center bg-stone-100 dark:bg-stone-900 text-[--text-color] p-4 ps-2 pb-3  transition-all duration-500  top-0  z-50">
+      <div className="flex justify-between items-center bg-gray-100 dark:bg-gray-900 p-4 ps-2 pb-3  transition-all duration-500  top-0  z-50">
         <div className="flex align-middle">
           <Link href={'/'}>
             <div className={`flex  justify-between gap-5 align-middle `}>
@@ -91,11 +91,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
         </div>
       </div>
 
-      <div className="relative bg-stone-100 dark:bg-stone-900">
-        <div
-          className={`h-screen ease-in transform duration-200 backdrop-filter  backdrop-blur-md bg-stone-100 dark:bg-stone-900 py-3 pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
+      <div className="relative ">
+        <motion.div
+          animate={isOpen ? 'open' : 'closed'} // Switch between open/closed animations
+          initial="open"
+          transition={{ duration: 3.5, ease: 'easeOut' }} // Controls the animation speed
+          className={`h-screen ease-in transform duration-200 backdrop-filter  backdrop-blur-md bg-gray-100 dark:bg-gray-900 py-3 pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
            md:relative transition-transform ${
-             isOpen ? 'w-full md:min-w-48 ' : 'w-16'
+             isOpen ? 'w-full md:min-w-48 ' : 'w-[4.4em]'
            }`}
         >
           {menu.map((menu) => (
@@ -103,8 +106,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
               <button
                 className={`flex gap-3 py-2 px-2 w-full rounded-md  font-medium ${
                   pathname.includes(menu.url)
-                    ? 'bg-yellow-500/40 text-yellow-500 font-semibold'
-                    : 'text-neutral-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    ? 'bg-green-600/10 text-green-500 font-semibold'
+                    : 'text-neutral-400 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50'
                 }`}
                 onClick={() => router.push(menu.url)}
               >
@@ -113,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
               </button>
             </div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </nav>
   );

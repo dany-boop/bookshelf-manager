@@ -39,7 +39,7 @@ const bookSchema = z.object({
     errorMap: () => ({ message: 'Status is required' }),
   }),
   description: z.string().optional(),
-  publisher: z.string().optional(),
+  publisher: z.string({ message: 'Publisher is required' }),
   publication_place: z.string().optional(),
   isbn: z.string().optional(),
   pages: z.string().optional(),
@@ -101,7 +101,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
     <div className="bg-stone-200/30 dark:bg-stone-900/30 backdrop-filter backdrop-blur-md p-6 rounded-lg max-w-2xl mx-auto shadow-md ">
       <div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit)} >
             <h2 className="text-xl mb-5 text-center font-bold">
               {book ? 'Edit Book' : 'Add New Book'}
             </h2>
@@ -119,7 +119,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} placeholder="Title" required />
+                      <Input {...field} placeholder="Title" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -185,7 +185,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} placeholder="Author" required />
+                        <Input {...field} placeholder="Author" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -224,7 +224,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} placeholder="Publisher" required />
+                        <Input {...field} placeholder="Publisher" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

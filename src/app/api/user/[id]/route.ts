@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
+import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { writeFile, unlink } from 'fs/promises';
 import { nanoid } from 'nanoid';
-import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 
 const prisma = new PrismaClient();
@@ -36,14 +36,13 @@ async function deleteImage(oldImagePath: string) {
     console.error('Failed to delete image:', error);
   }
 }
-
 // PUT method to edit data
 export async function PUT(req: NextRequest) {
   const { pathname } = new URL(req.url);
   const id = pathname.split('/').pop();
   console.log(id);
   if (!id) {
-    return NextResponse.json({ error: 'Invalid book ID' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
   }
 
   const formData = await req.formData();
@@ -112,54 +111,4 @@ export async function PUT(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// DELETE method to delete a book
-export async function DELETE(req: NextRequest) {
-  const { pathname } = new URL(req.url);
-  const id = pathname.split('/').pop();
-
-  if (!id || Array.isArray(id)) {
-    return NextResponse.json({ error: 'Invalid book ID' }, { status: 400 });
-  }
-
-  try {
-    const existingBook = await prisma.book.findUnique({
-      where: { id: Number(id) },
-    });
-
-    if (!existingBook) {
-      return NextResponse.json({ message: 'Book not found' }, { status: 404 });
-    }
-
-    await prisma.book.delete({
-      where: { id: Number(id) },
-    });
-
-    if (existingBook.coverImage) {
-      const oldImagePath = path.join(
-        process.cwd(),
-        '/public',
-        existingBook.coverImage
-      );
-      console.log('Attempting to delete image at:', oldImagePath); // Add logging
-      await deleteImage(oldImagePath);
-    }
-
-    return NextResponse.json(
-      { message: 'Book deleted successfully' },
-      { status: 204 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: 'Failed to delete book' },
-      { status: 500 }
-    );
-  }
-}
-
-// OPTIONS method to specify allowed methods
-export function OPTIONS() {
-  return NextResponse.json({ methods: ['GET', 'PUT', 'DELETE'] });
 }

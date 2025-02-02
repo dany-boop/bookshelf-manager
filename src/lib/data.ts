@@ -24,6 +24,27 @@ export const categories = [
   'Fantasy',
   'Mystery',
   'Biography',
+  'Novel',
+  'Philosophy',
+  'Comic',
+  'Romance',
+  'Buddhism',
+  'Hinduism',
+  'Islam',
+  'Religion',
+  'Christianity',
 ];
 
-export const languages = ['English', 'Spanish', 'French', 'German', 'Chinese'];
+export const languages = [
+  'English',
+  'Spanish',
+  'French',
+  'German',
+  'Chinese',
+  'Greek',
+  'Italy',
+  'Ancient',
+  'Indonesia',
+  'Japanese',
+  'Arabic',
+];

@@ -94,7 +94,7 @@ const MainLayout: FC<Props> = ({ children }) => {
 
           {/* Main Content */}
           <ScrollArea
-            className="flex-1 overflow-y-auto bg-stone-100 dark:bg-stone-900 px-8 w-full"
+            className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900 px-8 w-full"
             ref={mainContentRef}
           >
             {children}

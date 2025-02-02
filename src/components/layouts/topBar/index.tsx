@@ -40,7 +40,7 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
   return (
     <>
       <header
-        className={`fixed md:w-[82em] w-[26.6em]  z-40  transition-all duration-300 h-[4rem]  ${
+        className={`fixed md:w-[82em] w-[26.6em] z-40 transition-all duration-300 h-[4rem]  ${
           isSidebarOpen
             ? 'md:w-[calc(100%-18rem)] w-[calc(100%--0.5rem)]'
             : 'md:w-[calc(100%-4.5rem)] w-[calc(100%--0.5rem)]'
@@ -49,8 +49,8 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
         <div
           className={`flex px-7 justify-between items-center h-full  transition-all duration-300 ease-in-out ${
             isScrolled
-              ? 'mx-7 bg-stone-100/80 dark:bg-stone-900/80 shadow-md backdrop-filter backdrop-blur-md rounded-b-lg transform translate-y-0'
-              : 'bg-stone-100 dark:bg-stone-900 shadow-none transform -translate-y-1'
+              ? 'mx-7 bg-gray-100/80 dark:bg-gray-900/80 shadow-md backdrop-filter backdrop-blur-md rounded-b-lg transform translate-y-0'
+              : 'bg-gray-100 dark:bg-gray-900 shadow-none transform -translate-y-1'
           }`}
         >
           <div className="text-xl"></div>
