@@ -69,7 +69,7 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
             </button>
 
             <div className="my-auto">
-              <ModeToggle />
+              <ModeToggle className="bg-transparent" />
             </div>
             <p className="my-auto">{user?.username}</p>
             <button

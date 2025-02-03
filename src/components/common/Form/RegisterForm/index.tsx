@@ -30,6 +30,12 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 const RegisterForm = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [visible, setVisible] = useState(false);
+
+  const handleToggleVisibility = () => {
+    setVisible((prevVisible) => !prevVisible);
+  };
+
   const methods = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -56,8 +62,6 @@ const RegisterForm = () => {
         body: JSON.stringify(data),
       });
 
-      const result = await res.json();
-
       if (res.ok) {
         // toast.success('Registration successful! Please log in.');
         router.push('/auth/login');
@@ -76,26 +80,28 @@ const RegisterForm = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <FormControl>
           <div className="">
-            <Label htmlFor="email">Username</Label>
             <Input
               id="username"
               type="username"
-              {...register('username', { required: 'Username is required' })}
+              autoComplete="off"
               placeholder="Enter your username"
-              className="w-full"
+              label="username"
+              {...register('username', { required: 'Username is required' })}
+              className="w-ful border-gray-400 p-5 py-6 rounded-lg text-sm mt-10 focus:border-green-500"
             />
-            <FormMessage>{errors.email?.message}</FormMessage>
+            <FormMessage>{errors.username?.message}</FormMessage>
           </div>
         </FormControl>
         <FormControl>
           <div className="">
-            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              label="Email"
               type="email"
-              {...register('email', { required: 'Email is required' })}
+              autoComplete="off"
               placeholder="Enter your email"
-              className="w-full"
+              {...register('email', { required: 'Email is required' })}
+              className="w-ful border-gray-400 p-5 py-6 rounded-lg text-sm mt-10 focus:border-green-500"
             />
             <FormMessage>{errors.email?.message}</FormMessage>
           </div>
@@ -103,13 +109,13 @@ const RegisterForm = () => {
 
         <FormControl>
           <div className="">
-            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
+              label="Password"
               {...register('password')}
               placeholder="Enter your password"
-              className="w-full"
+              className="w-ful border-gray-400 p-5 py-6 rounded-lg text-sm mt-10 focus:border-green-500"
             />
 
             <FormMessage>{errors.password?.message}</FormMessage>
@@ -118,9 +124,13 @@ const RegisterForm = () => {
 
         <Button
           type="submit"
-          className="w-full bg-green-600 hover:bg-green-700 shadow-md hover:shadow-xl text-white"
+          className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
         >
-          {loading ? 'Registering ...' : 'Register'}
+          {loading ? (
+            <span className="animate-spin text-center "></span>
+          ) : (
+            'Register'
+          )}
         </Button>
       </form>
     </FormProvider>

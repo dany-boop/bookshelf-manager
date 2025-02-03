@@ -1,6 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { NormalInput } from '@/components/ui/input';
 import {
   addBook,
   editBook,
@@ -25,6 +24,12 @@ import {
   SingleSelectCombobox,
 } from '@/components/ui/MultiSelect';
 import { categories, languages } from '@/lib/data';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
 
 interface BookFormProps {
   book?: Book | null;
@@ -98,10 +103,10 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
   }, [dispatch]);
 
   return (
-    <div className="bg-stone-200/30 dark:bg-stone-900/30 backdrop-filter backdrop-blur-md p-6 rounded-lg max-w-2xl mx-auto shadow-md ">
+    <div className="bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-md p-6 rounded-lg max-w-2xl mx-auto shadow-md ">
       <div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} >
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             <h2 className="text-xl mb-5 text-center font-bold">
               {book ? 'Edit Book' : 'Add New Book'}
             </h2>
@@ -119,7 +124,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} placeholder="Title" />
+                      <NormalInput {...field} placeholder="Title" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -153,7 +158,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                       <textarea
                         {...field}
                         placeholder="Description"
-                        className="w-full p-2 border rounded-md"
+                        className="w-full p-2 border rounded-md focus:border-green-500 focus:outline-none"
                         rows={2}
                       />
                     </FormControl>
@@ -185,7 +190,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} placeholder="Author" />
+                        <NormalInput {...field} placeholder="Author" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -198,7 +203,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} placeholder="Pages" />
+                        <NormalInput {...field} placeholder="Pages" />
                       </FormControl>
                     </FormItem>
                   )}
@@ -211,7 +216,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} placeholder="ISBN" />
+                      <NormalInput {...field} placeholder="ISBN" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -224,7 +229,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} placeholder="Publisher" />
+                        <NormalInput {...field} placeholder="Publisher" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -237,7 +242,10 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} placeholder="Publication Place" />
+                        <NormalInput
+                          {...field}
+                          placeholder="Publication Place"
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -250,15 +258,14 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <select
-                        {...field}
-                        className="w-full p-2 border rounded-md"
-                      >
-                        <option value="">Select Status</option>
-                        <option value="reading">Reading</option>
-                        <option value="finished">Finished</option>
-                        <option value="unread">To Read</option>
-                      </select>
+                      <Select {...field}>
+                        <SelectTrigger className='focus:border-green-500'>{}</SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="reading">Reading</SelectItem>
+                          <SelectItem value="finished">Reading</SelectItem>
+                          <SelectItem value="unread">To Read</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -271,7 +278,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 render={({ field: { onChange } }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
+                      <NormalInput
                         type="file"
                         accept="image/*"
                         onChange={(e) => onChange(e.target.files?.[0])}

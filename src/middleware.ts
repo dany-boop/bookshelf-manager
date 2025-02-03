@@ -34,7 +34,6 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value; // Get token from cookies
 
   console.log('Current Path:', url.pathname);
-  console.log('Token:', token);
 
   // ✅ Allow access to authentication routes
   if (

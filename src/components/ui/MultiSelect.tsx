@@ -41,12 +41,6 @@ export function MultiSelectCombobox({
 }: MultiSelectComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
-  // const handleSelect = (selectedValue: any) => {
-  //   const newValue = value?.includes(selectedValue)
-  //     ? value?.filter((v) => v !== selectedValue)
-  //     : [...value, selectedValue];
-  //   onChange(newValue);
-  // };
   const handleSelect = (selectedValue: string) => {
     const normalizedOption = options.find(
       (opt) => opt.toLowerCase() === selectedValue.toLowerCase()
@@ -67,20 +61,28 @@ export function MultiSelectCombobox({
     onChange([]);
   };
 
+  // Use the full value string (or placeholder) for the tooltip
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild className="relative">
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between overflow-hidden"
+          className="md:min-w-40 w-full flex items-center justify-between overflow-hidden focus:border-green-500"
         >
-          {value.length > 0 ? value?.join(', ') : placeholder}
-          <div className="flex items-center gap-2">
+          <span
+            className="overflow-hidden max-w-32 min-w-32 text-ellipsis"
+            title={value.length > 0 ? value.join(', ') : placeholder}
+          >
+            {value.length > 0 ? value.join(', ') : placeholder}
+          </span>
+          <div className="flex absolute items-center right-1 gap-2 ">
             {value.length > 0 && (
               <button
-                className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100"
+                type="button"
+                className="h-5 w-5 bg-slate-300/20 p-0.5  backdrop-blur-sm backdrop-filter rounded-full "
                 onClick={handleClear}
               >
                 X
@@ -90,11 +92,12 @@ export function MultiSelectCombobox({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+
+      <PopoverContent className="w-[220px] p-0">
         <Command>
           <CommandInput placeholder={placeholder} />
-          <CommandList>
-            <CommandEmpty>No options found.</CommandEmpty>
+          <CommandList className="max-h-60 overflow-y-auto">
+            <CommandEmpty>No data found.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem key={option} onSelect={() => handleSelect(option)}>
@@ -128,15 +131,26 @@ export function SingleSelectCombobox({
   };
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild className="relative">
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between "
+          className="md:min-w-40 w-full justify-between focus:border-green-500"
         >
           {value || placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <div className="flex absolute items-center right-1 gap-2 ">
+            {value.length > 0 && (
+              <button
+                type="button"
+                className="h-5 w-5 bg-slate-300/20 p-0.5  backdrop-blur-sm backdrop-filter rounded-full "
+                onClick={handleClear}
+              >
+                X
+              </button>
+            )}
+            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+          </div>{' '}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">

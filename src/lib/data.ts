@@ -10,7 +10,7 @@ export const menu: Menu[] = [
     id: 1,
     name: 'Dashboard',
     url: '/dashboard',
-    icon: 'solar:home-line-duotone',
+    icon: 'iconamoon:home-duotone',
   },
   { id: 2, name: 'Catalog', url: '/catalog', icon: 'ph:books-duotone' },
   { id: 3, name: 'Profile', url: '/profile', icon: 'solar:user-bold-duotone' },

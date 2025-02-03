@@ -80,8 +80,6 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
     )
   );
 
-  console.log(filteredBooks.length);
-
   const getStatusClass = (status: string) => {
     switch (status) {
       case 'finished':
@@ -95,7 +93,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
     }
   };
   return (
-    <div className="rounded-2xl my-10 border bg-gradient-to-tr from-zinc-50 to-stone-50  dark:from-zinc-800 dark:to-stone-800 dark:border-0 shadow-md py-10 px-5">
+    <div className="rounded-2xl my-10 border bg-gradient-to-tr from-zinc-50 to-stone-50 from-80% to-100%  dark:from-gray-800 dark:to-slate-800 dark:border-0 shadow-md py-10 px-5">
       <div className="flex justify-between my-5">
         <h1 className="mx-5 text-lg font-semibold">Book Table</h1>
         <div className="flex gap-3 ">
@@ -119,7 +117,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
               onClick={() => handleSort('title')}
               className="cursor-pointer font-bold "
             >
-              <span className="flex gap-3 justify-center">
+              <span className="flex gap-3 justify-start">
                 Title
                 {sortConfig?.key === 'title' ? (
                   sortConfig.direction === 'asc' ? (
@@ -136,7 +134,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
               onClick={() => handleSort('author')}
               className="cursor-pointer font-bold"
             >
-              <span className="flex gap-3 justify-center">
+              <span className="flex gap-3 justify-start">
                 Author{' '}
                 {sortConfig?.key === 'author' ? (
                   sortConfig.direction === 'asc' ? (
@@ -195,10 +193,10 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
               >
                 <>
                   <TableCell>
-                    <span className="flex justify-center">{book.title}</span>
+                    <span className="flex justify-start">{book.title}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="flex justify-center">{book.author}</span>
+                    <span className="flex justify-start">{book.author}</span>
                   </TableCell>
                   <TableCell className="">
                     <p className="flex-justify-center rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
@@ -218,7 +216,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
 
                   <TableCell className="">
                     <Popover>
-                      <PopoverTrigger>
+                      <PopoverTrigger className="hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full p-1">
                         <Icon
                           icon="pepicons-pencil:dots-y"
                           width={30}
@@ -232,8 +230,8 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
                         >
                           <Icon
                             icon="solar:pen-new-round-linear"
-                            width={100}
-                            className="text-yellow-500 text-lg "
+                            width={50}
+                            className="text-yellow-500 w-20 "
                           />
                           <span className=" text-zinc-900 dark:text-zinc-50  ">
                             Edit
@@ -245,8 +243,8 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
                         >
                           <Icon
                             icon="solar:trash-bin-trash-bold-duotone"
-                            width={100}
-                            className=" text-red-500 text-lg "
+                            width={50}
+                            className=" text-red-500 w-20 "
                           />
                           <span className=" text-zinc-900 dark:text-zinc-50  ">
                             Delete

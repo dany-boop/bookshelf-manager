@@ -91,32 +91,28 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
         </div>
       </div>
 
-      <div className="relative ">
-        <motion.div
-          animate={isOpen ? 'open' : 'closed'} // Switch between open/closed animations
-          initial="open"
-          transition={{ duration: 3.5, ease: 'easeOut' }} // Controls the animation speed
-          className={`h-screen ease-in transform duration-200 backdrop-filter  backdrop-blur-md bg-gray-100 dark:bg-gray-900 py-3 pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
-           md:relative transition-transform ${
-             isOpen ? 'w-full md:min-w-48 ' : 'w-[4.4em]'
-           }`}
-        >
-          {menu.map((menu) => (
-            <div className="mx-3 mb-5" key={menu.id}>
-              <button
-                className={`flex gap-3 py-2 px-2 w-full rounded-md  font-medium ${
-                  pathname.includes(menu.url)
-                    ? 'bg-green-600/10 text-green-500 font-semibold'
-                    : 'text-neutral-400 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50'
-                }`}
-                onClick={() => router.push(menu.url)}
-              >
-                <Icon icon={menu.icon} width={25} />
-                {isOpen && <p className="flex justify-start ">{menu.name}</p>}
-              </button>
-            </div>
-          ))}
-        </motion.div>
+      <div
+        className={`h-screen  backdrop-filter backdrop-blur-md bg-gray-100 dark:bg-gray-900 py-3 pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
+           md:relative ${isOpen ? 'w-full md:min-w-48 ' : 'w-[4.4em]'}`}
+      >
+        <h1 className="mx-3 font-mono font-bold text-neutral-400 text-md my-2">
+          Menu
+        </h1>
+        {menu.map((menu) => (
+          <div className="mx-3 mb-5" key={menu.id}>
+            <button
+              className={`flex gap-3 py-2 px-2 w-full rounded-md font-medium ${
+                pathname.includes(menu.url)
+                  ? 'bg-green-600/10 text-green-500 font-semibold'
+                  : 'text-neutral-400 hover:bg-stone-100/50 dark:hover:bg-zinc-800/50'
+              }`}
+              onClick={() => router.push(menu.url)}
+            >
+              <Icon icon={menu.icon} width={25} />
+              {isOpen && <p className="flex justify-start ">{menu.name}</p>}
+            </button>
+          </div>
+        ))}
       </div>
     </nav>
   );

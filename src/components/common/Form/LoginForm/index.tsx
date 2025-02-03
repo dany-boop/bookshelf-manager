@@ -16,11 +16,11 @@ const loginSchema = z.object({
     .string()
     .nonempty('Email cannot be empty')
     .email('email must be have @ something')
-    .min(3, { message: 'email must be at least 3 characters' }),
+    .min(3, { message: 'email cannot be empty' }),
   password: z
     .string()
     .nonempty('Password cannot be empty')
-    .min(6, { message: 'Password must be at least 6 characters' }),
+    .min(6, { message: 'Password cannot be empty' }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -57,8 +57,6 @@ const LoginForm = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-
-      console.log('response', response);
 
       if (response.ok) {
         const { user, token } = await response.json();
@@ -100,7 +98,6 @@ const LoginForm = () => {
               id="email"
               label="Email"
               type="email"
-              spellCheck="false"
               autoComplete="off"
               placeholder=""
               {...register('email', { required: 'Email is required' })}

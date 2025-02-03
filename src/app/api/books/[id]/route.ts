@@ -41,7 +41,6 @@ async function deleteImage(oldImagePath: string) {
 export async function PUT(req: NextRequest) {
   const { pathname } = new URL(req.url);
   const id = pathname.split('/').pop();
-  console.log(id);
   if (!id) {
     return NextResponse.json({ error: 'Invalid book ID' }, { status: 400 });
   }
