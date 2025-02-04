@@ -3,17 +3,23 @@ import { BookStatus, PrismaClient } from '@prisma/client';
 import path from 'path';
 import { nanoid } from 'nanoid';
 import sharp from 'sharp';
-// import { middleware } from '@/middleware';
 
 const prisma = new PrismaClient();
 
+// Define the upload directory and the 1MB threshold in bytes.
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads');
+const ONE_MB = 1024 * 1024;
 
-export async function GET(req: NextRequest) {
+// get method
+
+export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(req.url);
 
-  const page = parseInt(searchParams.get('page') || '1', 15);
-  const limit = parseInt(searchParams.get('limit') || '15', 15);
+  // Parse pagination parameters using base 10.
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '15', 10);
+
+  // Extract filtering parameters.
   const category = searchParams.get('category');
   const status = searchParams.get('status');
   const isbn = searchParams.get('isbn');
@@ -24,34 +30,38 @@ export async function GET(req: NextRequest) {
   const userId = searchParams.get('userId');
   const query = searchParams.get('query');
 
+  // Validate required parameter.
   if (!userId) {
-    return NextResponse.json(
-      { error: 'User  ID is required' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
   }
-
+  // Build the Prisma "where" filter.
   const where: any = { userId };
 
+  // if (category) {
+  //   where.OR = category.split(',').map((cat) => ({
+  //     category: { contains: cat.trim(), mode: 'insensitive' },
+  //   }));
+  // }
   if (category) {
     where.OR = category.split(',').map((cat) => ({
       category: { has: cat.trim() },
     }));
   }
 
-  // if (category) where.category = { contains: category, mode: 'insensitive' };
-
+  // Additional filters.
   if (isbn) where.isbn = { contains: isbn, mode: 'insensitive' };
   if (publisher) where.publisher = { contains: publisher, mode: 'insensitive' };
-  if (publication_place)
+  if (publication_place) {
     where.publication_place = {
       contains: publication_place,
       mode: 'insensitive',
     };
-  if (status) where.status = status || undefined;
+  }
+  if (status) where.status = status;
   if (title) where.title = { contains: title, mode: 'insensitive' };
-  if (language) where.language = { contains: language };
+  if (language) where.language = { contains: language, mode: 'insensitive' };
   if (query) {
+    // Merge query-based filtering conditions.
     where.OR = [
       { title: { contains: query.toLowerCase() } },
       { author: { contains: query.toLowerCase() } },
@@ -84,7 +94,7 @@ export async function GET(req: NextRequest) {
       currentPage: page,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching books:', error);
     return NextResponse.json(
       { error: 'Failed to fetch books' },
       { status: 500 }
@@ -92,23 +102,31 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// saveImage
 async function saveImage(file: File): Promise<string> {
   const extension = path.extname(file.name);
   const fileName = `${nanoid()}${extension}`;
   const filePath = path.join(UPLOAD_DIR, fileName);
 
-  // Convert the image to a buffer and optimize it
+  // Convert the file into a Buffer.
   const imageBuffer = Buffer.from(await file.arrayBuffer());
 
-  // Use sharp to resize and compress the image
-  await sharp(imageBuffer)
-    .resize(800) // Resize to a width of 800px (adjust as needed)
-    .jpeg({ quality: 80 }) // Adjust quality for JPEG images
-    .toFile(filePath); // Save the optimized image
+  // Check the file size. Optimize only if > 1MB.
+  if (file.size > ONE_MB) {
+    await sharp(imageBuffer)
+      .resize({ width: 800 }) // Resize width to 800px.
+      .jpeg({ quality: 80 }) // Compress JPEG images at 80% quality.
+      .toFile(filePath);
+  } else {
+    // For small files, write the buffer directly without optimization.
+    await sharp(imageBuffer).toFile(filePath);
+  }
 
-  return `/uploads/${fileName}`; // Return public path for the image
+  return `/uploads/${fileName}`;
 }
-export async function POST(req: NextRequest) {
+
+// post method
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const formData = await req.formData();
 
@@ -176,7 +194,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(newBook, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error('Error creating book:', error);
     return NextResponse.json(
       { error: 'Failed to create book' },
       { status: 500 }
@@ -184,6 +202,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * OPTIONS /api/books
+ *
+ * Returns the allowed HTTP methods for this endpoint.
+ *
+ * @returns {NextResponse} The response containing allowed methods.
+ */
 export function OPTIONS() {
   return NextResponse.json({ methods: ['GET', 'POST'] });
 }

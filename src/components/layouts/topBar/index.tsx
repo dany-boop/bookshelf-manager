@@ -8,6 +8,7 @@ import { ModeToggle } from '@/components/common/ThemeToggle';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/store/reducers/authSlice';
 import { RootState } from '@/store/store';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 
 type Props = {
   isScrolled: boolean;
@@ -71,7 +72,15 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
             <div className="my-auto">
               <ModeToggle className="bg-transparent" />
             </div>
-            <p className="my-auto">{user?.username}</p>
+            <div className="my-auto">
+              <Avatar className="md:h-8 md:w-8 h-6 w-6">
+                {user?.photo_url ? (
+                  <AvatarImage src={user?.photo_url} alt="User Picture" />
+                ) : (
+                  <Icon icon="solar:user-circle-outline" width={25} />
+                )}
+              </Avatar>
+            </div>
             <button
               className=" bg-red-100 hover:bg-red-200 text-red-600 rounded-lg my-auto"
               onClick={handleLogout}

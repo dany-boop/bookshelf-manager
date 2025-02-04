@@ -2,8 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -108,16 +108,26 @@ const RegisterForm = () => {
         </FormControl>
 
         <FormControl>
-          <div className="">
+          <div className="relative">
             <Input
               id="password"
-              type="password"
+              type={visible ? 'text' : 'password'}
               label="Password"
               {...register('password')}
               placeholder="Enter your password"
               className="w-ful border-gray-400 p-5 py-6 rounded-lg text-sm mt-10 focus:border-green-500"
             />
-
+            <button
+              type="button"
+              onClick={handleToggleVisibility}
+              className="absolute top-1/4 right-4 transform cursor-pointer text-slate-800 dark:text-slate-200 hover:bg-gray-400 p-0.5 rounded-full"
+            >
+              {visible ? (
+                <Icon icon="solar:eye-bold-duotone" width={25} />
+              ) : (
+                <Icon icon="iconamoon:eye-off-duotone" width={25} />
+              )}
+            </button>
             <FormMessage>{errors.password?.message}</FormMessage>
           </div>
         </FormControl>

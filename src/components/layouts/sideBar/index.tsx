@@ -48,14 +48,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
           <Link href={'/'}>
             <div className={`flex  justify-between gap-5 align-middle `}>
               <div className="">
-                {/* <Image
-                  src="/logo-removebg-preview.png"
+                <Image
+                  src="/assets/icon.svg"
                   alt="Login Image"
                   width={28}
                   height={28}
                   objectFit="cover"
                   loading="lazy"
-                /> */}
+                />
               </div>
               {isOpen && (
                 <h1 className="text-xl text-slate-900 dark:text-slate-100 mt-1 font-extrabold  transition-all duration-300">

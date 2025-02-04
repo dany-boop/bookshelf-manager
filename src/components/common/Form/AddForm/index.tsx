@@ -54,7 +54,6 @@ const bookSchema = z.object({
 
 const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
-
   const { addBookState, editBookState } = useSelector(
     (state: RootState) => state.books
   );
@@ -259,10 +258,12 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                   <FormItem>
                     <FormControl>
                       <Select {...field}>
-                        <SelectTrigger className='focus:border-green-500'>{}</SelectTrigger>
+                        <SelectTrigger className="focus:border-green-500">
+                          {}
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="reading">Reading</SelectItem>
-                          <SelectItem value="finished">Reading</SelectItem>
+                          <SelectItem value="finished">Finished</SelectItem>
                           <SelectItem value="unread">To Read</SelectItem>
                         </SelectContent>
                       </Select>

@@ -1,32 +1,3 @@
-// import { NextRequest, NextResponse } from 'next/server';
-
-// export function middleware(request: NextRequest) {
-//   const url = new URL(request.url);
-//   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
-//   // Exclude authentication routes from token validation
-//   if (
-//     url.pathname.startsWith('/auth/login') ||
-//     url.pathname.startsWith('/api/auth/login') ||
-//     url.pathname.startsWith('/api/auth/register')
-//   ) {
-//     return NextResponse.next();
-//   } else if (!token) {
-//     return NextResponse.redirect(new URL('/auth/login', request.url));
-//   }
-
-//   // // If no token is found, return an unauthorized response
-//   // if (!token) {
-//   // }
-
-//   return NextResponse.next();
-// }
-
-// // Apply middleware to specific paths
-// export const config = {
-//   matcher: ['/dashboard', '/profile', '/api/books/:path*'], // Protect pages & API
-// };
-
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
@@ -65,5 +36,5 @@ export function middleware(request: NextRequest) {
 
 // ✅ Apply middleware only to protected routes
 export const config = {
-  matcher: ['/dashboard', '/profile', '/api/books/:path*'],
+  matcher: ['/dashboard', '/profile', '/api/books/:path*', '/'],
 };

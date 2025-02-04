@@ -48,3 +48,10 @@ export const languages = [
   'Japanese',
   'Arabic',
 ];
+
+export const status_options = [
+  { label: 'All', value: 'none' },
+  { label: 'Unread', value: 'unread' },
+  { label: 'Reading', value: 'reading' },
+  { label: 'Finished', value: 'finished' },
+];

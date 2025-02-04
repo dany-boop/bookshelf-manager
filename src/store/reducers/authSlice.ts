@@ -2,7 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface AuthState {
   isAuthenticated: boolean;
-  user: { email: string; username: string; id: string } | null;
+  user: {
+    email: string;
+    username: string;
+    id: string;
+    photo_url: string;
+  } | null;
   token: string | null;
   error: string | null;
 }
@@ -40,9 +45,19 @@ const authSlice = createSlice({
       state.error = null;
       localStorage.clear();
     },
+    updateUserSuccess(state, action: PayloadAction<AuthState['user']>) {
+      if (state.user) {
+        state.user = action.payload;
+        sessionStorage.setItem(
+          'auth',
+          JSON.stringify({ ...state, user: action.payload })
+        );
+      }
+    },
   },
 });
 
-export const { loginSuccess, loginFailure, logout } = authSlice.actions;
+export const { loginSuccess, loginFailure, logout, updateUserSuccess } =
+  authSlice.actions;
 
 export default authSlice.reducer;

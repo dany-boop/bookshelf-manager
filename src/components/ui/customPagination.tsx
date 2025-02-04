@@ -32,7 +32,7 @@ const CustomPagination: React.FC<PaginationProps> = ({
 
   return (
     <Pagination>
-      <PaginationContent>
+      <PaginationContent className="absolute bottom-5">
         <PaginationItem>
           <PaginationPrevious
             onClick={(e) => {

@@ -3,6 +3,14 @@ import SearchBooks from '@/components/common/DebounceSearch';
 import { Button } from '@/components/ui/button';
 import CustomPagination from '@/components/ui/customPagination';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
   MultiSelectCombobox,
   SingleSelectCombobox,
 } from '@/components/ui/MultiSelect';
@@ -12,7 +20,8 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select';
-import { categories, languages } from '@/lib/data';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { categories, languages, status_options } from '@/lib/data';
 import { fetchBooksData, setFilters } from '@/store/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/store/store';
 import { Book, BookStatus } from '@prisma/client';
@@ -23,9 +32,6 @@ import { useDispatch, useSelector } from 'react-redux';
 type Props = {};
 
 const CatalogContainer = (props: Props) => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [expandedBookId, setExpandedBookId] = useState<number | null>(null); // Track expanded book by ID
   const dispatch = useDispatch<AppDispatch>();
   const { catalog, loading, error, pagination } = useSelector(
     (state: RootState) => state.books
@@ -58,23 +64,10 @@ const CatalogContainer = (props: Props) => {
     );
   });
 
-  const toggleCardDetails = (bookId: number) => {
-    setExpandedBookId((prevId) => (prevId === bookId ? null : bookId)); // Toggle book details
-  };
-
-  const openForm = (book?: Book | null | undefined) => {
-    setSelectedBook(book || null);
-    setIsFormOpen(true);
-  };
-
-  const closeForm = () => {
-    setIsFormOpen(false);
-  };
-
   return (
     <main>
       <div className="">
-        <div className="flex justify-between">
+        <div className="md:flex-1 flex-col gap-3 md:justify-between">
           <SearchBooks userId={userId} className="w-80 mb-10" />
           <div className="flex gap-8">
             <MultiSelectCombobox
@@ -94,90 +87,126 @@ const CatalogContainer = (props: Props) => {
               }}
               placeholder="Select a Language"
             />
-
-            <Select
-              value={filters.status || 'none'}
-              onValueChange={(status) =>
-                dispatch(
-                  setFilters({ status: status === 'none' ? '' : status })
-                )
-              }
-            >
-              <SelectTrigger className="w-full">
-                {filters.status ? filters.status : 'Select Status'}
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {Object.values(BookStatus).map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-16">
-          {filteredBooks.map((book: any) => (
-            <div
-              key={book.id}
-              className="border bg-gradient-to-tr from-zinc-50 to-stone-50 from-80% to-100% dark:from-gray-800 dark:to-slate-800 dark:border-0 dark:shadow-md shadow-sm rounded-lg overflow-hidden"
-            >
-              <div className="flex gap-5">
-                <div className="relative md:min-w-40">
-                  <Image
-                    src={book.coverImage || '/default-image.jpg'}
-                    alt={book.title}
-                    width={200}
-                    height={200}
-                    className="w-40 h-60 bg-cover mb-2 "
-                    placeholder="blur"
-                    blurDataURL="/default-image.jpg"
-                    loading="lazy"
-                  />
-                  <Button
-                    className="flex bg-white/10 border-white/20 backdrop-blur-sm border-1 overflow-hidden p-1 absolute rounded-xl  bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10"
-                    onClick={() => toggleCardDetails(book.id)}
-                  >
-                    show detail
-                  </Button>
-                </div>
+        <Tabs
+          value={filters.status || 'none'}
+          onValueChange={(status) =>
+            dispatch(setFilters({ status: status === 'none' ? '' : status }))
+          }
+        >
+          <TabsList className="flex w-full overflow-x-auto">
+            {status_options.map(({ label, value }) => (
+              <TabsTrigger key={value} value={value}>
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value={filters.status || 'none'}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-16">
+              {filteredBooks.map((book: any) => (
+                <div
+                  key={book.id}
+                  className="border p-2 bg-gradient-to-tr from-zinc-50 to-stone-50 from-80% to-100% dark:from-gray-800 dark:to-slate-800 dark:border-0 dark:shadow-md shadow-sm rounded-2xl overflow-hidden"
+                >
+                  <div className="flex gap-5">
+                    <div className="relative md:min-w-40">
+                      <Image
+                        src={book.coverImage || '/default-image.jpg'}
+                        alt={book.title}
+                        width={200}
+                        height={200}
+                        className="w-40 h-60 bg-cover mb-2 rounded-xl"
+                        placeholder="blur"
+                        blurDataURL="/default-image.jpg"
+                        loading="lazy"
+                      />
+                      <Dialog>
+                        <DialogTrigger className="flex bg-white/10 border-white/20 backdrop-blur-sm border-1 overflow-hidden p-1 absolute rounded-xl bottom-0.5 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 font-semibold">
+                          show detail
+                        </DialogTrigger>
+                        <DialogContent className="w-full ">
+                          <DialogHeader>
+                            <DialogTitle>Book Details</DialogTitle>
+                            <div className="flex gap-10">
+                              <Image
+                                src={book.coverImage || '/default-image.jpg'}
+                                alt={book.title}
+                                width={200}
+                                height={200}
+                                className="w-40 h-60 bg-cover mb-2 rounded-xl"
+                                placeholder="blur"
+                                blurDataURL="/default-image.jpg"
+                                loading="lazy"
+                              />
+                              <div className="md:max-w-full max-w-md">
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>Title: </span>
+                                  <span>{book.title}</span>
+                                </p>
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>Author: </span>
+                                  <span>{book.author}</span>
+                                </p>
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>ISBN: </span>
+                                  <span>{book.isbn}</span>
+                                </p>
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>Publisher: </span>
+                                  <span>{book.publisher}</span>
+                                </p>
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>Publication Place: </span>
+                                  <span>{book.publication_place}</span>
+                                </p>
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>Categories: </span>
+                                  <span>{book.category}</span>
+                                </p>
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>Language: </span>
+                                  <span>{book.language}</span>
+                                </p>
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>Pages: </span>
+                                  <span>{book.pages}</span>
+                                </p>
+                                <p className="flex gap-2 text-md font-bold">
+                                  <span>Status: </span>
+                                  <span>{book.status}</span>
+                                </p>
+                              </div>
+                            </div>
+                            <DialogDescription>
+                              {book.description}
+                            </DialogDescription>
+                          </DialogHeader>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
 
-                {/* Show brief description and expand button */}
-                <div className="px-4 py-10 ">
-                  {/* <h2 className="text-md font-bold">{book.title}</h2>
-                  <p className="text-gray-500">by {book.author}</p> */}
-                  <p className="text-sm text-gray-700">
-                    {book.description?.substring(0, 100)}...
-                  </p>
+                    <div className="max-w-[10em] md:max-w-xl px-4  ">
+                      <div>
+                        <p className="flex-justify-center overflow-hidden rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
+                          {book.category}
+                        </p>
+                      </div>
+                      <div className="mt-3">
+                        <h2 className="text-md font-bold">{book.title}</h2>
+                        <p className="text-gray-500">by {book.author}</p>
+                        <p className="text-sm text-gray-700">
+                          {book.description?.substring(0, 100)}...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Show expanded details if the card is selected */}
-              {expandedBookId === book.id && (
-                <div className="bg-gray-100 p-4">
-                  <h3 className="font-semibold text-lg">Details</h3>
-                  <p>
-                    <strong>Category:</strong> {book.category}
-                  </p>
-                  <p>
-                    <strong>Language:</strong> {book.language}
-                  </p>
-                  <p>
-                    <strong>Pages:</strong> {book.pages}
-                  </p>
-                  <p>
-                    <strong>Status:</strong> {book.status}
-                  </p>
-                  <p>
-                    <strong>Published At:</strong>{' '}
-                    {new Date(book.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
+          </TabsContent>
+        </Tabs>
+
         <CustomPagination
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
