@@ -13,6 +13,12 @@ RUN npm install
 # Copy the rest of your application code
 COPY . .
 
+# Set environment variable for production (Vercel will override these with its own)
+ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://postgres:bookshelfDrew2424@@db.gyzskfbyqbzfopfxejnh.supabase.co:5432/postgres"
+
+# Generate Prisma client using production schema
+RUN npx prisma generate --schema=./prisma/schema.prod.prisma
 # Install Prisma
 RUN npx prisma generate
 

@@ -2,14 +2,15 @@
   "name": "bookshelf-manager",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "lint": "next lint",
-    "seed": "ts-node prisma/seed.ts",
-    "postinstall": "prisma generate"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "prisma generate --schema=./prisma/schema.prod.prisma && next build",
+  "start": "next start",
+  "migrate:dev": "prisma migrate dev --schema=./prisma/schema.dev.prisma --name init",
+  "seed": "ts-node prisma/seed.ts",
+  "postinstall": "prisma generate --schema=./prisma/schema.prod.prisma"
+},
+ 
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@iconify/react": "^5.2.0",
