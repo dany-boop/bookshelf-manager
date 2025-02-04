@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Input, NormalInput } from '@/components/ui/input';
 
-import { AppDispatch, RootState } from '@/store/store';
+import { AppDispatch, RootState } from '@/redux/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -13,7 +13,7 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import { resetEditUserState, updateUser } from '@/store/reducers/userSlice';
+import { resetEditUserState, updateUser } from '@/redux/reducers/userSlice';
 import { Icon } from '@iconify/react';
 
 interface UserFormProps {

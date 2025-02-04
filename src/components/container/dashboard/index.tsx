@@ -2,8 +2,8 @@
 import AddBookForm from '@/components/common/Form/AddForm';
 import BooksTable from '@/components/common/Table';
 import CustomPagination from '@/components/ui/customPagination';
-import { fetchBooksData, setCurrentPage } from '@/store/reducers/bookSlice';
-import { AppDispatch, RootState } from '@/store/store';
+import { fetchBooksData, setCurrentPage } from '@/redux/reducers/bookSlice';
+import { AppDispatch, RootState } from '@/redux/store';
 import { Book } from '@prisma/client';
 import Image from 'next/image';
 import React, { FC, useEffect, useState } from 'react';

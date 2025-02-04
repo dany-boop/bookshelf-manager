@@ -2,8 +2,8 @@
 import EditUserForm from '@/components/common/Form/UserForm';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { fetchUser } from '@/store/reducers/userSlice';
-import { AppDispatch, RootState } from '@/store/store';
+import { fetchUser } from '@/redux/reducers/userSlice';
+import { AppDispatch, RootState } from '@/redux/store';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
 import React, { useEffect } from 'react';

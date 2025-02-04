@@ -9,8 +9,8 @@ import {
   PaginationEllipsis,
 } from '@/components/ui/pagination'; // Import ShadCN Pagination components
 import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentPage } from '@/store/reducers/bookSlice';
-import { RootState, AppDispatch } from '@/store/store';
+import { setCurrentPage } from '@/redux/reducers/bookSlice';
+import { RootState, AppDispatch } from '@/redux/store';
 
 interface PaginationProps {
   currentPage: number;
@@ -32,7 +32,9 @@ const CustomPagination: React.FC<PaginationProps> = ({
 
   return (
     <Pagination>
-      <PaginationContent className="absolute bottom-5">
+      <PaginationContent
+      // className="absolute bottom-5"
+      >
         <PaginationItem>
           <PaginationPrevious
             onClick={(e) => {
@@ -42,6 +44,7 @@ const CustomPagination: React.FC<PaginationProps> = ({
                 handlePageChange(currentPage - 1);
               }
             }}
+            className="bg-zinc-50  dark:bg-slate-800 dark:border-0"
           />
         </PaginationItem>
 
@@ -54,7 +57,7 @@ const CustomPagination: React.FC<PaginationProps> = ({
                 onClick={() => handlePageChange(page)}
                 href="#"
                 className={
-                  page === currentPage ? 'text-blue-600 font-bold' : ''
+                  page === currentPage ? 'text-green-500 font-bold' : ''
                 }
               >
                 {page}
@@ -78,6 +81,7 @@ const CustomPagination: React.FC<PaginationProps> = ({
                 handlePageChange(currentPage + 1);
               }
             }}
+            className=""
           />
         </PaginationItem>
       </PaginationContent>

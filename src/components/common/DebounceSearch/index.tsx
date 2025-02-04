@@ -1,8 +1,8 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchBooksData } from '@/store/reducers/bookSlice';
-import { AppDispatch, RootState } from '@/store/store';
+import { fetchBooksData } from '@/redux/reducers/bookSlice';
+import { AppDispatch, RootState } from '@/redux/store';
 import { cn } from '@/lib/utils';
 
 interface SearchBooksProps {
@@ -17,12 +17,12 @@ const SearchBooks: React.FC<SearchBooksProps> = ({
   const [query, setQuery] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const dispatch = useDispatch<AppDispatch>(); // Use AppDispatch type here
-  const { loading, error } = useSelector((state: RootState) => state.books);
+  const { error } = useSelector((state: RootState) => state.books);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setQuery(value);
-    setPage(1); // Reset to first page when the query changes
+    setPage(1);
   };
 
   useEffect(() => {
@@ -44,7 +44,6 @@ const SearchBooks: React.FC<SearchBooksProps> = ({
           className
         )}
       />
-      {error && <p>{error}</p>}
     </div>
   );
 };

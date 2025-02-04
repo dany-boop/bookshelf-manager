@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Book } from '@prisma/client';
 import SearchBooks from '../DebounceSearch';
 import { useDispatch } from 'react-redux';
-import { deleteBook } from '@/store/reducers/bookSlice';
-import { AppDispatch } from '@/store/store';
+import { deleteBook } from '@/redux/reducers/bookSlice';
+import { AppDispatch } from '@/redux/store';
 import {
   Popover,
   PopoverContent,

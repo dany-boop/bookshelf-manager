@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import StoreProvider from '@/store/storeProvider';
-import { ThemeProvider } from '@/hooks/useTheme';
+import StoreProvider from '@/redux/storeProvider';
 import { Toaster } from 'sonner';
+import { ThemeProvider } from './theme-provider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',

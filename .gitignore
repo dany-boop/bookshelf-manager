@@ -20,6 +20,10 @@
 # production
 /build
 
+# prisma
+/prisma/bookshelf.db*
+
+
 # misc
 .DS_Store
 *.pem

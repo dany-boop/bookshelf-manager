@@ -5,8 +5,8 @@ import {
   editBook,
   resetAddBookState,
   resetEditBookState,
-} from '@/store/reducers/bookSlice';
-import { AppDispatch, RootState } from '@/store/store';
+} from '@/redux/reducers/bookSlice';
+import { AppDispatch, RootState } from '@/redux/store';
 import { Book, BookStatus } from '@prisma/client';
 import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
@@ -257,16 +257,15 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Select {...field}>
-                        <SelectTrigger className="focus:border-green-500">
-                          {}
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="reading">Reading</SelectItem>
-                          <SelectItem value="finished">Finished</SelectItem>
-                          <SelectItem value="unread">To Read</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <select
+                        {...field}
+                        className="w-full p-2 border rounded-md focus:border-green-500"
+                      >
+                        <option value="">Select Status</option>
+                        <option value="reading">Reading</option>
+                        <option value="finished">Finished</option>
+                        <option value="unread">To Read</option>
+                      </select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

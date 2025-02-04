@@ -3,10 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const token = request.cookies.get('token')?.value; // Get token from cookies
-
   console.log('Current Path:', url.pathname);
 
-  // ✅ Allow access to authentication routes
+  // Allow access to authentication routes
   if (
     url.pathname.startsWith('/auth/login') ||
     url.pathname.startsWith('/api/auth/login') ||
@@ -20,7 +19,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ❌ If no token and accessing a protected route, redirect to login
+  //  If no token and accessing a protected route, redirect to login
   const protectedRoutes = ['/dashboard', '/profile', '/catalog', '/api/books'];
   if (
     !token &&
@@ -34,7 +33,7 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// ✅ Apply middleware only to protected routes
+//  Apply middleware only to protected routes
 export const config = {
   matcher: ['/dashboard', '/profile', '/catalog', '/api/books/:path*'],
 };

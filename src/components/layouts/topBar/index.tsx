@@ -1,13 +1,13 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React, { FC, useState } from 'react';
 
 import { Icon } from '@iconify/react';
 import { ModeToggle } from '@/components/common/ThemeToggle';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '@/store/reducers/authSlice';
-import { RootState } from '@/store/store';
+import { logout } from '@/redux/reducers/authSlice';
+import { RootState } from '@/redux/store';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 
 type Props = {
@@ -15,17 +15,28 @@ type Props = {
   isSidebarOpen: boolean;
 };
 const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
-  const pathname = usePathname();
   const router = useRouter();
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const user = useSelector((state: RootState) => state.auth.user);
 
   const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        // Dispatch logout action to clear the Redux state
+        dispatch(logout());
+        router.push('/auth/login'); // Redirect to login page
+      }
+    } catch (error) {
+      console.error('Error logging out', error);
+    }
   };
+
   const handleFullScreenToggle = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();

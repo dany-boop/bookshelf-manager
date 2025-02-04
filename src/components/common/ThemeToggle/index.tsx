@@ -18,7 +18,7 @@ export const ModeToggle: React.FC<Props> = ({ className, ...props }) => {
       size="icon"
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
       className={cn(
-        'backdrop-filter backdrop-blur-sm border-none rounded-xl text-slate-900 dark:text-slate-100',
+        'backdrop-filter backdrop-blur-sm  border-none rounded-xl text-slate-900 dark:text-slate-100',
         className
       )}
     >

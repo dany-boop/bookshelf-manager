@@ -20,7 +20,7 @@ const PaginationContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ul
     ref={ref}
-    className={cn('flex flex-row items-center gap-1', className)}
+    className={cn('flex flex-row items-center gap-3', className)}
     {...props}
   />
 ));
@@ -67,7 +67,7 @@ const PaginationPrevious = ({
     aria-label="Go to previous page"
     size="default"
     className={cn(
-      'px-3 dark:bg-gradient-to-tr dark:from-zinc-800 dark:to-stone-800 hover:dark:bg-stone-900 bg-zinc-100 border dark:border-0 hover:bg-stone-50',
+      'px-3 bg-zinc-50  dark:bg-slate-800  border dark:border-0 hover:bg-stone-50 hover:dark:bg-slate-700',
       className
     )}
     {...props}
@@ -85,7 +85,7 @@ const PaginationNext = ({
     aria-label="Go to next page"
     size="default"
     className={cn(
-      ' px-3 dark:bg-gradient-to-tr dark:from-zinc-800 dark:to-stone-800 hover:dark:bg-stone-900 bg-zinc-100 border dark:border-0 hover:bg-stone-50',
+      'px-3 bg-zinc-50  dark:bg-slate-800  border dark:border-0 hover:bg-stone-50 hover:dark:bg-slate-700',
       className
     )}
     {...props}

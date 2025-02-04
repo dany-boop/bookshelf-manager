@@ -34,3 +34,36 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+if you want to use supabase use this .env file 
+
+DATABASE_URL="postgresql://postgres.gyzskfbyqbzfopfxejnh:bycpDApaJ2ykYHhg@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+JWT_SECRET="OxsyzWimgiYHFyugzfsZlvduusyw0kHdjinqSMkuV2SNnPEv2zxCRRod6KSUCvn+5n0fwUDQEaFZHTcYXf6UvA=="
+JWT_EXPIRES_IN="1h"
+
+and also change the prisma schema datasource to 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+and then run command 
+
+>npx prisma migrate dev --name
+and run npx prisma generate
+
+if you want to use the sqlite use this .env file 
+ DATABASE_URL="file:./bookshelf.db"
+ JWT_SECRET="3afb0658974a6d4051a3166963544729c790b097c960996f202683a685bad071436de276d6c53afff0583f6db443382247836d90111e416a681354fa366650d1"
+ JWT_EXPIRES_IN="1h"
+
+and also change the prisma schema datasoure to
+
+ datasource db {
+   provider = "sqlite"
+   url      = env("DATABASE_URL")
+ }
+
+ >npx prisma migrate dev --name
+and run npx prisma generate

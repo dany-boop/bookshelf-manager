@@ -1,5 +1,5 @@
 'use client';
-import { loginFailure, loginSuccess } from '@/store/reducers/authSlice';
+import { loginFailure, loginSuccess } from '@/redux/reducers/authSlice';
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { useDispatch } from 'react-redux';
@@ -135,7 +135,9 @@ const LoginForm = () => {
             className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
           >
             {loading ? (
-              <span className="animate-spin text-center "></span>
+              <span className="animate-spin text-center ">
+                <Icon icon="mingcute:loading-fill" />
+              </span>
             ) : (
               'Login'
             )}

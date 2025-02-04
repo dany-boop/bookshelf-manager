@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
 export interface AuthState {
   isAuthenticated: boolean;
   user: {
@@ -43,7 +42,6 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.error = null;
-      localStorage.clear();
     },
     updateUserSuccess(state, action: PayloadAction<AuthState['user']>) {
       if (state.user) {
