@@ -89,130 +89,121 @@ const EditUserForm: FC<UserFormProps> = ({ id, username, email, password }) => {
   }, [dispatch]);
 
   return (
-    <div className="p-6 rounded-lg ">
-      <div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <h2 className="text-xl mb-5 text-center font-bold">
-              Personal Info
-            </h2>
+    <div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <h2 className="text-xl mb-5 text-center font-bold">Personal Info</h2>
 
-            {/* Error Message */}
-            {editUserState.error && (
-              <div className="text-red-500">{editUserState.error}</div>
-            )}
-            <div className="space-y-3">
+          {/* Error Message */}
+          {editUserState.error && (
+            <div className="text-red-500">{editUserState.error}</div>
+          )}
+          <div className="space-y-3">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="username"
+                      id="username"
+                      name="username"
+                      label="Username"
+                      placeholder=""
+                      className="w-ful border-gray-400 p-5 py-6 rounded-lg text-sm mt-10 focus:border-green-500"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      id="email"
+                      name="email"
+                      label="Email"
+                      placeholder=""
+                      className="w-ful border-gray-400 p-5 py-6 rounded-lg text-sm mt-10 focus:border-green-500"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="relative">
               <FormField
+                name="password"
                 control={form.control}
-                name="username"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Input
                         {...field}
-                        type="username"
-                        id="username"
-                        name="username"
-                        label="Username"
+                        id="password"
+                        name="password"
+                        type={visible ? 'text' : 'password'}
+                        label="Password"
                         placeholder=""
-                        className={`
-             w-full border p-5 py-6 rounded-lg focus:border-[--color-accent] bg-[--quaternary] text-sm  placeholder:text-[--text-primary] mt-5
-             `}
+                        onChange={(e) => {
+                          setHasUserTyped(true);
+                          field.onChange(e);
+                        }}
+                        className="w-ful border-gray-400 p-5 py-6 rounded-lg text-sm mt-10 focus:border-green-500"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute top-1/4 right-4 transform cursor-pointer text-slate-800 dark:text-slate-200 hover:bg-gray-400 p-0.5 rounded-full"
+                    >
+                      {visible ? (
+                        <Icon icon="solar:eye-bold-duotone" width={25} />
+                      ) : (
+                        <Icon icon="iconamoon:eye-off-duotone" width={25} />
+                      )}
+                    </button>
+                    <FormMessage>{editUserState.error}</FormMessage>
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="email"
-                        id="email"
-                        name="email"
-                        label="Email"
-                        placeholder=""
-                        className={`
-             w-full border p-5 py-6 rounded-lg focus:border-[--color-accent] bg-[--quaternary] text-sm  placeholder:text-[--text-primary] mt-5
-             `}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="relative">
-                <FormField
-                  name="password"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          id="password"
-                          name="password"
-                          type={visible ? 'text' : 'password'}
-                          label="Password"
-                          placeholder=""
-                          onChange={(e) => {
-                            setHasUserTyped(true);
-                            field.onChange(e);
-                          }}
-                          className={`
-                            w-full border p-5 py-6 rounded-lg focus:border-[--color-accent] bg-[--quaternary] text-sm  placeholder:text-[--text-primary] mt-5
-                            `}
-                        />
-                      </FormControl>
-                      <button
-                        type="button"
-                        onClick={togglePasswordVisibility}
-                        className="absolute top-1/4 right-4 transform cursor-pointer text-slate-800 dark:text-slate-200 hover:bg-gray-400 p-0.5 rounded-full"
-                      >
-                        {visible ? (
-                          <Icon icon="solar:eye-bold-duotone" width={25} />
-                        ) : (
-                          <Icon icon="iconamoon:eye-off-duotone" width={25} />
-                        )}
-                      </button>
-                      <FormMessage>{editUserState.error}</FormMessage>
-                    </FormItem>
-                  )}
-                />
-              </div>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="photo_url"
-                render={({ field: { onChange } }) => (
-                  <FormItem>
-                    <FormControl>
-                      <NormalInput
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => onChange(e.target.files?.[0])}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex items-center justify-end space-x-4 mt-5">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded"
-              >
-                {editUserState.loading ? 'Saving...' : 'Save'}
-              </button>
-            </div>
-          </form>
-        </Form>
-      </div>
+            <FormField
+              control={form.control}
+              name="photo_url"
+              render={({ field: { onChange } }) => (
+                <FormItem>
+                  <FormControl>
+                    <NormalInput
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => onChange(e.target.files?.[0])}
+                      className="mt-10"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="flex items-center justify-end space-x-4 mt-5">
+            <button
+              type="submit"
+              className="px-5 py-2 dark:bg-zinc-50 dark:text-gray-900 hover:dark:bg-zinc-100 hover:bg-gray-700 bg-gray-900 text-zinc-50 rounded-lg font-bold "
+            >
+              {editUserState.loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 };

@@ -10,8 +10,11 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application code
+# Copy the rest of your application code
 COPY . .
+
+# Install Prisma
+RUN npx prisma generate
 
 # Build the Next.js application
 RUN npm run build

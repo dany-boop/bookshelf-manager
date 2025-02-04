@@ -1,0 +1,11 @@
+{
+    "builds": [
+      {
+        "src": "Dockerfile",
+        "use": "@vercel/static-build"
+      }
+    ],
+    "env": {
+      "DATABASE_URL": "file:/prisma/bookshelf.db" 
+    }
+  }

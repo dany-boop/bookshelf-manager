@@ -8,6 +8,8 @@ import { Book } from '@prisma/client';
 import Image from 'next/image';
 import React, { FC, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 type Props = {};
 
@@ -27,6 +29,12 @@ const DashboardContainer: FC = (props: Props) => {
   const userId = useSelector((state: RootState) => state.auth.user?.id);
 
   useEffect(() => {
+    if (error) {
+      toast.error(`Error: ${error}`);
+    }
+  }, [error]);
+
+  useEffect(() => {
     if (userId) {
       dispatch(fetchBooksData({ page: pagination.currentPage, userId })); // Pass userId along with page
     } else {
@@ -43,10 +51,19 @@ const DashboardContainer: FC = (props: Props) => {
   };
 
   return (
-    <main>
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="mb-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-          <div className="p-5 flex gap-5 bg-gradient-to-r from-green-500/40 via-stone-100  to-zinc-50  dark:from-green-500/40 dark:via-gray-800 dark:to-slate-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0">
+          <motion.div
+            className="p-5 flex gap-5 bg-gradient-to-r from-green-500/40 via-stone-100 to-zinc-50 dark:from-green-500/40 dark:via-gray-800 dark:to-slate-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 100 }}
+          >
             <Image
               src="/assets/books-open-assets-3.webp"
               alt="Background"
@@ -60,8 +77,14 @@ const DashboardContainer: FC = (props: Props) => {
               <h1 className="font-bold">Total Books</h1>
               <p className="mt-3 text-3xl font-bold">{totalBooks}</p>
             </span>
-          </div>
-          <div className="p-5 flex gap-2 bg-gradient-to-r from-green-500/40 via-stone-100  to-zinc-50  dark:from-green-500/40 dark:via-gray-800 dark:to-slate-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0">
+          </motion.div>
+          <motion.div
+            className="p-5 flex gap-2 bg-gradient-to-r from-green-500/40 via-stone-100 to-zinc-50 dark:from-green-500/40 dark:via-gray-800 dark:to-slate-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 100 }}
+          >
+            {' '}
             <Image
               src="/assets/books-open-assets-2.webp"
               alt="Background"
@@ -75,8 +98,13 @@ const DashboardContainer: FC = (props: Props) => {
               <h1 className="font-bold">Finished Reading</h1>
               <p className="mt-3 text-3xl font-bold">{finishedBooks}</p>
             </span>
-          </div>
-          <div className="p-5 flex gap-5 bg-gradient-to-r from-green-500/40 via-stone-100  to-zinc-50  dark:from-green-500/40 dark:via-gray-800 dark:to-slate-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0">
+          </motion.div>
+          <motion.div
+            className="p-5 flex gap-5 bg-gradient-to-r from-green-500/40 via-stone-100 to-zinc-50 dark:from-green-500/40 dark:via-gray-800 dark:to-slate-800 shadow-sm dark:shadow-md rounded-lg border dark:border-0"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 100 }}
+          >
             <Image
               src="/assets/books-open-assets-4.webp"
               alt="Background"
@@ -90,11 +118,11 @@ const DashboardContainer: FC = (props: Props) => {
               <h1 className="font-bold">On Going</h1>
               <p className="mt-3 text-3xl font-bold">{readBooks}</p>
             </span>
-          </div>
+          </motion.div>
         </div>
         <div>
-          {loading && <p>Loading...</p>}
-          {error && <p>Error: {error}</p>}
+          {/* {loading && <p>Loading...</p>}
+          {error && <p>Error: {error}</p>} */}
 
           <div>
             <BooksTable
@@ -118,7 +146,7 @@ const DashboardContainer: FC = (props: Props) => {
           )}
         </div>
       </div>
-    </main>
+    </motion.main>
   );
 };
 

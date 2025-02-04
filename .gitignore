@@ -10,6 +10,8 @@
 /coverage
 
 /public/uploads/*
+!/public/uploads/user
+/public/uploads/user/*
 
 # next.js
 /.next/
@@ -37,3 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel

@@ -19,6 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { motion } from 'framer-motion';
 
 type Props = {
   books: Book[];
@@ -93,7 +94,14 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
     }
   };
   return (
-    <div className="rounded-2xl my-10 border bg-gradient-to-tr from-zinc-50 to-stone-50 from-80% to-100%  dark:from-gray-800 dark:to-slate-800 dark:border-0 shadow-md py-10 px-5">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="rounded-2xl my-10 border bg-gradient-to-tr from-zinc-50 to-stone-50 dark:from-gray-800 dark:to-slate-800 dark:border-0 shadow-md py-10 px-5"
+    >
+      {' '}
       <div className="flex justify-between my-5">
         <h1 className="mx-5 text-lg font-semibold">Book Table</h1>
         <div className="flex gap-3 ">
@@ -185,10 +193,22 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredBooks.length > 0 ? (
+          {loading ? (
+            [...Array(5)].map((_, index) => (
+              <TableRow key={index} className="animate-pulse">
+                <TableCell colSpan={5} className="py-5 text-center">
+                  <div className="h-4 bg-gray-300 rounded dark:bg-gray-700 w-3/4 mx-auto"></div>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : filteredBooks.length > 0 ? (
             filteredBooks.map((book) => (
-              <TableRow
+              <motion.tr
                 key={book.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
                 className="border-b border-dashed dark:border-zinc-600"
               >
                 <>
@@ -254,7 +274,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
                     </Popover>
                   </TableCell>
                 </>
-              </TableRow>
+              </motion.tr>
             ))
           ) : (
             <TableRow>
@@ -265,7 +285,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
           )}
         </TableBody>
       </Table>
-    </div>
+    </motion.div>
   );
 };
 
