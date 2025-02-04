@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
   }
 
   // ❌ If no token and accessing a protected route, redirect to login
-  const protectedRoutes = ['/dashboard', '/profile', '/api/books'];
+  const protectedRoutes = ['/dashboard', '/profile', '/catalog', '/api/books'];
   if (
     !token &&
     protectedRoutes.some((route) => url.pathname.startsWith(route))
@@ -36,5 +36,5 @@ export function middleware(request: NextRequest) {
 
 // ✅ Apply middleware only to protected routes
 export const config = {
-  matcher: ['/dashboard', '/profile', '/api/books/:path*', '/'],
+  matcher: ['/dashboard', '/profile', '/catalog', '/api/books/:path*'],
 };
