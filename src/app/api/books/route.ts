@@ -171,28 +171,64 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    const missingFields = [];
+    if (!userId) missingFields.push('userId');
+    if (!title) missingFields.push('title');
+    if (!author) missingFields.push('author');
+    if (!status) missingFields.push('status');
+    if (!coverImageFile) missingFields.push('coverImage');
+
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        { error: `Missing required fields: ${missingFields.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Handle image processing
+    let coverImage;
+    try {
+      coverImage = await saveImage(coverImageFile);
+    } catch (imageError) {
+      console.error('Image processing failed:', imageError);
+      return NextResponse.json(
+        { error: 'Failed to process image' },
+        { status: 500 }
+      );
+    }
+
     // Save image file and get public URL
-    const coverImage = await saveImage(coverImageFile);
+    // const coverImage = await saveImage(coverImageFile);
 
     // Create the book record in the database
-    const newBook = await prisma.book.create({
-      data: {
-        userId,
-        title,
-        category,
-        description,
-        author,
-        pages,
-        language,
-        isbn,
-        publisher,
-        publication_place,
-        status, // Ensure enum compliance
-        coverImage,
-      },
-    });
+    try {
+      const newBook = await prisma.book.create({
+        data: {
+          userId,
+          title,
+          category,
+          description,
+          author,
+          pages,
+          language,
+          isbn,
+          publisher,
+          publication_place,
+          status,
+          coverImage,
+        },
+      });
 
-    return NextResponse.json(newBook, { status: 201 });
+      return NextResponse.json(newBook, { status: 201 });
+    } catch (dbError) {
+      console.error('Database insertion failed:', dbError);
+      return NextResponse.json(
+        { error: 'Database error: Unable to create book' },
+        { status: 500 }
+      );
+    }
+
+    // return NextResponse.json(newBook, { status: 201 });
   } catch (error) {
     console.error('Error creating book:', error);
     return NextResponse.json(
@@ -202,13 +238,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-/**
- * OPTIONS /api/books
- *
- * Returns the allowed HTTP methods for this endpoint.
- *
- * @returns {NextResponse} The response containing allowed methods.
- */
 export function OPTIONS() {
   return NextResponse.json({ methods: ['GET', 'POST'] });
 }
