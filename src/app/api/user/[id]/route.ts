@@ -199,7 +199,9 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
           await deleteImage(oldPhotoPath);
         } else {
           const imagePath = existingUser.photo_url.split('/').pop();
-          await deleteImageFromSupabase(`user/${imagePath}` ?? '');
+          if (imagePath) {
+            await deleteImageFromSupabase(`book/${imagePath}`);
+          } // Return a 204 No Content status.
         }
       }
     }
