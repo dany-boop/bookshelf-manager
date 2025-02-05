@@ -1,18 +1,3 @@
-/**
- * @fileoverview Books API endpoints for updating and deleting a book.
- * This module provides:
- * - PUT: To update a book (with image upload support).
- * - DELETE: To delete a book (and its associated cover image).
- *
- * Key Features:
- * - Robust error handling with proper HTTP status responses.
- * - Image optimization (using Sharp) only for files larger than 1MB.
- * - Clean and modular code with detailed documentation.
- *
- * Performance:
- * - Uses asynchronous file operations.
- * - Only optimizes large image files.
- */
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
 import { writeFile } from 'fs/promises';
@@ -20,53 +5,116 @@ import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import sharp from 'sharp';
+import { supabase } from '@/lib/supabase';
 
 const prisma = new PrismaClient();
-
-// Directory for uploaded images.
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads');
 const ONE_MB = 1024 * 1024; // 1MB in bytes
 
-// image save
-async function saveImage(file: File): Promise<string> {
+// ------------- IMAGE HANDLING HELPERS ------------- //
+
+/**
+ * Saves an image file either by uploading to Supabase or saving locally.
+ * @param file - The File object.
+ * @returns The public URL to the saved image or null on failure.
+ */
+async function saveImage(file: File): Promise<string | null> {
+  const isSupabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return isSupabaseConfigured ? uploadToSupabase(file) : saveLocally(file);
+}
+
+/**
+ * Uploads an image file to Supabase Storage.
+ */
+async function uploadToSupabase(file: File): Promise<string | null> {
+  try {
+    const fileExt = path.extname(file.name);
+    const fileName = `${nanoid()}${fileExt}`;
+    const filePath = `book/${fileName}`;
+    const imageBuffer = Buffer.from(await file.arrayBuffer());
+
+    // Optimize image if larger than 1MB.
+    let optimizedBuffer = imageBuffer;
+    if (file.size > ONE_MB) {
+      optimizedBuffer = await sharp(imageBuffer)
+        .resize({ width: 800 })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+    }
+
+    const { data, error } = await supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
+      .upload(filePath, optimizedBuffer, {
+        contentType: file.type,
+        upsert: true,
+      });
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return null;
+    }
+
+    const publicUrl = supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
+      .getPublicUrl(filePath).data.publicUrl;
+    return publicUrl;
+  } catch (err) {
+    console.error('Supabase upload failed:', err);
+    return null;
+  }
+}
+
+/**
+ * Saves an image file locally.
+ */
+async function saveLocally(file: File): Promise<string> {
   const extension = path.extname(file.name);
   const fileName = `${nanoid()}${extension}`;
   const filePath = path.join(UPLOAD_DIR, fileName);
-
-  // Convert file to a Buffer.
   const imageBuffer = Buffer.from(await file.arrayBuffer());
 
-  // Check file size and optimize only if > 1MB.
   if (file.size > ONE_MB) {
     await sharp(imageBuffer)
       .resize({ width: 800 })
       .jpeg({ quality: 80 })
       .toFile(filePath);
   } else {
-    // Otherwise, write the file directly.
     await writeFile(filePath, imageBuffer);
   }
-
   return `/uploads/${fileName}`;
 }
 
 /**
- * deleteImage
- * Deletes an image file from the server.
- *
- * @param {string} imagePath - The absolute path to the image file.
- * @returns {Promise<void>}
+ * Deletes a local image file.
  */
-async function deleteImage(imagePath: string): Promise<void> {
+async function deleteImageLocally(imagePath: string): Promise<void> {
   try {
-    // Check if the file exists.
     await fs.promises.access(imagePath, fs.constants.F_OK);
-    console.log('Deleting image at:', imagePath);
+    console.log('Deleting local image at:', imagePath);
     await fs.promises.unlink(imagePath);
-  } catch (error: any) {
-    console.error('Failed to delete image:', error);
+  } catch (error) {
+    console.error('Failed to delete local image:', error);
   }
 }
+
+/**
+ * Deletes an image from Supabase Storage.
+ */
+async function deleteImageFromSupabase(filePath: string): Promise<void> {
+  try {
+    const { error } = await supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
+      .remove([filePath]);
+    if (error) {
+      console.error('Failed to delete image from Supabase:', error);
+      throw new Error('Failed to delete image from Supabase');
+    }
+    console.log('Image deleted from Supabase:', filePath);
+  } catch (err) {
+    console.error('Error deleting image from Supabase:', err);
+  }
+}
+
+// ------------- API HANDLERS ------------- //
 
 /**
  * PUT /api/books/:id
@@ -79,7 +127,9 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     if (!id) {
       return NextResponse.json({ error: 'Invalid book ID' }, { status: 400 });
     }
+
     const formData = await req.formData();
+    // Destructure update fields from the formData.
     const {
       title,
       category,
@@ -102,7 +152,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ message: 'Book not found' }, { status: 404 });
     }
 
-    // Prepare the update data
+    // Prepare update data.
     const updateData: any = {
       title,
       category,
@@ -121,10 +171,21 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
       const newCoverImage = await saveImage(newCoverImageFile);
       updateData.coverImage = newCoverImage;
 
-      // Delete the old image if exists.
+      // Delete old image if it exists.
       if (existingBook.coverImage) {
-        const oldImagePath = path.join(process.cwd(), existingBook.coverImage);
-        await deleteImage(oldImagePath);
+        if (existingBook.coverImage.startsWith('/uploads')) {
+          const oldImagePath = path.join(
+            process.cwd(),
+            'public',
+            existingBook.coverImage
+          );
+          await deleteImageLocally(oldImagePath);
+        } else {
+          const imageName = existingBook.coverImage.split('/').pop();
+          if (imageName) {
+            await deleteImageFromSupabase(`book/${imageName}`);
+          }
+        }
       }
     }
 
@@ -143,7 +204,10 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-// DELETE method to delete a book
+/**
+ * DELETE /api/books/:id
+ * Deletes an existing book record and its cover image.
+ */
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
   try {
     const { pathname } = new URL(req.url);
@@ -152,6 +216,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
     if (!id || Array.isArray(id)) {
       return NextResponse.json({ error: 'Invalid book ID' }, { status: 400 });
     }
+
     // Retrieve the existing book.
     const existingBook = await prisma.book.findUnique({
       where: { id: Number(id) },
@@ -160,27 +225,29 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ message: 'Book not found' }, { status: 404 });
     }
 
-    // Delete the book record from the database.
+    // Delete the book record.
     await prisma.book.delete({
       where: { id: Number(id) },
     });
 
-    // Delete the cover image file if it exists.
+    // Delete the cover image if it exists.
     if (existingBook.coverImage) {
-      const oldImagePath = path.join(
-        process.cwd(),
-        'public',
-        existingBook.coverImage
-      );
-      console.log('Attempting to delete image at:', oldImagePath);
-      await deleteImage(oldImagePath);
+      if (existingBook.coverImage.startsWith('/uploads')) {
+        const localPath = path.join(
+          process.cwd(),
+          'public',
+          existingBook.coverImage
+        );
+        await deleteImageLocally(localPath);
+      } else {
+        const imageName = existingBook.coverImage.split('/').pop();
+        if (imageName) {
+          await deleteImageFromSupabase(`book/${imageName}`);
+        }
+      }
     }
 
-    // Return a 204 No Content status.
-    return NextResponse.json(
-      { message: 'Book deleted successfully' },
-      { status: 204 }
-    );
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('Error deleting book:', error);
     return NextResponse.json(
@@ -190,7 +257,10 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-// OPTIONS method to specify allowed methods
+/**
+ * OPTIONS /api/books
+ * Returns allowed HTTP methods.
+ */
 export function OPTIONS() {
   return NextResponse.json({ methods: ['GET', 'PUT', 'DELETE'] });
 }

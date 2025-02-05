@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Book } from '@prisma/client';
+import { toast } from 'sonner';
 
 interface BookFormState {
   loading: boolean;
@@ -97,42 +98,62 @@ export const fetchBooksData = createAsyncThunk<
 
 export const addBook = createAsyncThunk<Book, FormData>(
   'books/addBook',
-  async (formData) => {
-    const response = await fetch('/api/books', {
-      method: 'POST',
-      body: formData,
-    });
-    if (!response.ok) {
-      throw new Error('Failed to add book');
+  async (formData, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/books', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add book');
+      }
+      const book = await response.json();
+      toast.success('Book added successfully!');
+      return book;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add book');
+      return rejectWithValue(error.message);
     }
-    return await response.json();
   }
 );
 
 export const editBook = createAsyncThunk<
   Book,
   { id: number; formData: FormData }
->('books/editBook', async ({ id, formData }) => {
-  const response = await fetch(`/api/books/${id}`, {
-    method: 'PUT',
-    body: formData,
-  });
-  if (!response.ok) {
-    throw new Error('Failed to edit book');
+>('books/editBook', async ({ id, formData }, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`/api/books/${id}`, {
+      method: 'PUT',
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error('Failed to edit book');
+    }
+    const book = await response.json();
+    toast.success('Book updated successfully!');
+    return book;
+  } catch (error: any) {
+    toast.error(error.message || 'Failed to edit book');
+    return rejectWithValue(error.message);
   }
-  return await response.json();
 });
 
 export const deleteBook = createAsyncThunk<{ id: number }, number>(
   'books/deleteBook',
-  async (id) => {
-    const response = await fetch(`/api/books/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error('Failed to delete book');
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/books/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete book');
+      }
+      toast.success('Book deleted successfully!');
+      return { id };
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete book');
+      return rejectWithValue(error.message);
     }
-    return { id }; // Return the id of the deleted book
   }
 );
 

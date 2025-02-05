@@ -121,9 +121,6 @@ const DashboardContainer: FC = (props: Props) => {
           </motion.div>
         </div>
         <div>
-          {/* {loading && <p>Loading...</p>}
-          {error && <p>Error: {error}</p>} */}
-
           <div>
             <BooksTable
               books={catalog}

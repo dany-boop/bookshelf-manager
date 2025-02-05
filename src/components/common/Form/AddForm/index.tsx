@@ -24,12 +24,8 @@ import {
   SingleSelectCombobox,
 } from '@/components/ui/MultiSelect';
 import { categories, languages } from '@/lib/data';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Icon } from '@iconify/react';
 
 interface BookFormProps {
   book?: Book | null;
@@ -296,14 +292,18 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
               >
                 Cancel
               </button>
-              <button
+              <Button
                 type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded"
+                className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
               >
-                {addBookState.loading || editBookState.loading
-                  ? 'Saving...'
-                  : 'Save'}
-              </button>
+                {addBookState.loading || editBookState.loading ? (
+                  <span className="animate-spin text-center ">
+                    <Icon icon="mingcute:loading-fill" />
+                  </span>
+                ) : (
+                  'Save'
+                )}
+              </Button>
             </div>
           </form>
         </Form>

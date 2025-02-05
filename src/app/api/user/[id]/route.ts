@@ -1,27 +1,3 @@
-/**
- * @fileoverview User API endpoints for updating and deleting a user.
- * This module handles:
- * - PUT: To update a user's details (including optional photo upload).
- * - DELETE: To delete a user (and optionally remove the user's photo from storage).
- *
- * Best practices implemented:
- * - Clean, modular code with detailed documentation.
- * - Performance optimization: Only optimize the photo if its size exceeds 1MB.
- * - Robust error handling: Every branch returns an appropriate HTTP response.
- *
- * Model:
- *   model User {
- *     id        String   @id @default(cuid())
- *     email     String   @unique
- *     password  String
- *     username  String
- *     photo_url String?
- *     createdAt DateTime @default(now())
- *     updatedAt DateTime @updatedAt
- *     Book      Book[]
- *   }
- */
-
 import { PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
@@ -30,13 +6,60 @@ import sharp from 'sharp';
 import { writeFile } from 'fs/promises';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
+import { supabase } from '@/lib/supabase';
 
 const prisma = new PrismaClient();
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/user');
 const ONE_MB = 1024 * 1024; // 1MB in bytes
 
+async function saveImage(file: File): Promise<string | null> {
+  const isSupabase = !!process.env.NEXT_PUBLIC_SUPABASE_URL; // Check if Supabase is configured
+
+  if (isSupabase) {
+    return uploadToSupabase(file);
+  } else {
+    return saveLocally(file);
+  }
+}
+
+async function uploadToSupabase(file: File): Promise<string | null> {
+  try {
+    const fileExt = path.extname(file.name);
+    const fileName = `${nanoid()}${fileExt}`;
+    const filePath = `user/${fileName}`;
+    const imageBuffer = Buffer.from(await file.arrayBuffer());
+
+    // Optimize image if > 1MB
+    let optimizedBuffer = imageBuffer;
+    if (file.size > ONE_MB) {
+      optimizedBuffer = await sharp(imageBuffer)
+        .resize({ width: 800 })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+    }
+
+    const { data, error } = await supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
+      .upload(filePath, optimizedBuffer, {
+        contentType: file.type,
+        upsert: true,
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return null;
+    }
+
+    return supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
+      .getPublicUrl(filePath).data.publicUrl;
+  } catch (err) {
+    console.error('Supabase upload failed:', err);
+    return null;
+  }
+}
 // save photo
-async function savePhoto(file: File): Promise<string> {
+async function saveLocally(file: File): Promise<string> {
   const extension = path.extname(file.name);
   const fileName = `${nanoid()}${extension}`;
   const filePath = path.join(UPLOAD_DIR, fileName);
@@ -59,7 +82,7 @@ async function savePhoto(file: File): Promise<string> {
 }
 
 // delete file
-async function deleteFile(filePath: string): Promise<void> {
+async function deleteImage(filePath: string): Promise<void> {
   try {
     // Verify file exists
     await fs.promises.access(filePath, fs.constants.F_OK);
@@ -70,10 +93,24 @@ async function deleteFile(filePath: string): Promise<void> {
   }
 }
 
-/**
- * GET /api/user/:id
- * Fetch user details by ID.
- */
+async function deleteImageFromSupabase(filePath: string): Promise<void> {
+  try {
+    const { error } = await supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
+      .remove([filePath]); // filePath refers to the path of the image in Supabase storage
+
+    if (error) {
+      console.error('Failed to delete image from Supabase:', error);
+      throw new Error('Failed to delete image from Supabase');
+    }
+
+    console.log('Image deleted from Supabase:', filePath);
+  } catch (err) {
+    console.error('Error deleting image from Supabase:', err);
+  }
+}
+
+// get user by id
 export async function GET(req: NextRequest) {
   try {
     const { pathname } = new URL(req.url);
@@ -153,12 +190,17 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
 
     // Handle photo update.
     if (newPhotoFile instanceof File) {
-      const newPhotoUrl = await savePhoto(newPhotoFile);
+      const newPhotoUrl = await saveImage(newPhotoFile);
       updateData.photo_url = newPhotoUrl;
       // Delete old photo if exists.
       if (existingUser.photo_url) {
         const oldPhotoPath = path.join(process.cwd(), existingUser.photo_url);
-        await deleteFile(oldPhotoPath);
+        if (existingUser.photo_url.startsWith('/uploads')) {
+          await deleteImage(oldPhotoPath);
+        } else {
+          const imagePath = existingUser.photo_url.split('/').pop();
+          await deleteImageFromSupabase(`user/${imagePath}` ?? '');
+        }
       }
     }
 
@@ -200,15 +242,33 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
 
     // If a photo exists, delete the photo file.
     if (existingUser.photo_url) {
+      if (existingUser.photo_url.startsWith('/uploads')) {
+        // If image is local
+        const oldImagePath = path.join(
+          process.cwd(),
+          'public',
+          existingUser.photo_url
+        );
+        await deleteImage(oldImagePath);
+      } else {
+        // If image is in Supabase
+        const imagePath = existingUser.photo_url.split('/').pop(); // Extract the image name from the URL
+        if (imagePath) {
+          await deleteImageFromSupabase(`book/${imagePath}`);
+        } // Return a 204 No Content status.
+      }
       const photoPath = path.join(
         process.cwd(),
         'public',
         existingUser.photo_url
       );
       console.log('Attempting to delete photo at:', photoPath);
-      await deleteFile(photoPath);
     }
 
+    // return new NextResponse(null, {
+    //   message: 'User deleted successfully',
+    //   status: 204,
+    // });
     return NextResponse.json(
       { message: 'User deleted successfully' },
       { status: 204 }

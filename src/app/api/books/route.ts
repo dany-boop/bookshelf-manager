@@ -3,6 +3,7 @@ import { BookStatus, PrismaClient } from '@prisma/client';
 import path from 'path';
 import { nanoid } from 'nanoid';
 import sharp from 'sharp';
+import { supabase } from '@/lib/supabase';
 
 const prisma = new PrismaClient();
 
@@ -103,26 +104,77 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 }
 
 // saveImage
-async function saveImage(file: File): Promise<string> {
-  const extension = path.extname(file.name);
-  const fileName = `${nanoid()}${extension}`;
-  const filePath = path.join(UPLOAD_DIR, fileName);
+async function saveImage(file: File): Promise<string | null> {
+  const isSupabase = !!process.env.NEXT_PUBLIC_SUPABASE_URL; // Check if Supabase is configured
 
-  // Convert the file into a Buffer.
-  const imageBuffer = Buffer.from(await file.arrayBuffer());
-
-  // Check the file size. Optimize only if > 1MB.
-  if (file.size > ONE_MB) {
-    await sharp(imageBuffer)
-      .resize({ width: 800 }) // Resize width to 800px.
-      .jpeg({ quality: 80 }) // Compress JPEG images at 80% quality.
-      .toFile(filePath);
+  if (isSupabase) {
+    // Upload to Supabase Storage
+    return uploadToSupabase(file);
   } else {
-    // For small files, write the buffer directly without optimization.
-    await sharp(imageBuffer).toFile(filePath);
+    // Save locally in public/uploads for SQLite
+    return saveLocally(file);
   }
+}
 
-  return `/uploads/${fileName}`;
+async function uploadToSupabase(file: File): Promise<string | null> {
+  try {
+    const fileExt = path.extname(file.name);
+    const fileName = `${nanoid()}${fileExt}`;
+    const filePath = `book/${fileName}`;
+    const imageBuffer = Buffer.from(await file.arrayBuffer());
+
+    // Optimize if > 1MB
+    let optimizedBuffer = imageBuffer;
+    if (file.size > ONE_MB) {
+      optimizedBuffer = await sharp(imageBuffer)
+        .resize({ width: 800 })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+    }
+
+    const { data, error } = await supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
+      .upload(filePath, optimizedBuffer, {
+        contentType: file.type,
+        upsert: true,
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return null;
+    }
+
+    return supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
+      .getPublicUrl(filePath).data.publicUrl;
+  } catch (err) {
+    console.error('Supabase upload failed:', err);
+    return null;
+  }
+}
+
+async function saveLocally(file: File): Promise<string | null> {
+  try {
+    const extension = path.extname(file.name);
+    const fileName = `${nanoid()}${extension}`;
+    const filePath = path.join(UPLOAD_DIR, fileName);
+
+    const imageBuffer = Buffer.from(await file.arrayBuffer());
+
+    if (file.size > ONE_MB) {
+      await sharp(imageBuffer)
+        .resize({ width: 800 })
+        .jpeg({ quality: 80 })
+        .toFile(filePath);
+    } else {
+      await sharp(imageBuffer).toFile(filePath);
+    }
+
+    return `/uploads/${fileName}`;
+  } catch (err) {
+    console.error('Local file save failed:', err);
+    return null;
+  }
 }
 
 // post method
@@ -186,13 +238,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     // Handle image processing
-    let coverImage;
-    try {
-      coverImage = await saveImage(coverImageFile);
-    } catch (imageError) {
-      console.error('Image processing failed:', imageError);
+    const coverImageUrl = await saveImage(coverImageFile);
+
+    if (!coverImageUrl) {
       return NextResponse.json(
-        { error: 'Failed to process image' },
+        { error: 'Image upload failed' },
         { status: 500 }
       );
     }
@@ -215,7 +265,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           publisher,
           publication_place,
           status,
-          coverImage,
+          coverImage: coverImageUrl,
         },
       });
 

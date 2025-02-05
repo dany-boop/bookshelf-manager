@@ -9,10 +9,6 @@
 # testing
 /coverage
 
-# /public/uploads/*
-# !/public/uploads/user
-# /public/uploads/user/
-
 # next.js
 /.next/
 /out/
@@ -20,9 +16,17 @@
 # production
 /build
 
-# prisma
+# Prisma: ignore migrations and SQLite DB file
+/prisma/migrations/
 /prisma/bookshelf.db*
 
+# Public uploads:
+# Ignore everything inside /public/uploads/
+public/uploads/*
+# Re-include the user folder itself
+!public/uploads/user
+# Ignore all files inside /public/uploads/user/
+public/uploads/user/*
 
 # misc
 .DS_Store

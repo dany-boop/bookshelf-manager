@@ -43,7 +43,7 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
         <motion.div
           key={book.id}
           variants={bookVariant}
-          className="border p-2 bg-gradient-to-tr from-zinc-50 to-stone-50 from-80% to-100% dark:from-gray-800 dark:to-slate-800 dark:border-0 dark:shadow-md shadow-sm rounded-2xl overflow-hidden"
+          className="border p-2 bg-gradient-to-tr from-zinc-50 to-stone-50 from-80% to-100% dark:from-gray-800 dark:to-slate-800 dark:border-0 dark:shadow-md shadow-sm rounded-2xl overflow-y-auto md:overflow-hidden max-h-80 md:max-h-auto "
         >
           <div className="flex gap-5">
             <div className="relative md:min-w-40">
@@ -58,15 +58,15 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
                 loading="lazy"
               />
               <Dialog>
-                <DialogTrigger className=" bg-white/10 border-white/20 backdrop-blur-sm border-1 overflow-hidden p-1 absolute text-white rounded-xl bottom-0.5 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 font-semibold ">
+                <DialogTrigger className=" dark:bg-slate-800/50 stone-50/50 border-white/20 backdrop-blur-sm border-1  p-1 absolute text-white rounded-xl bottom-0.5 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 font-semibold ">
                   <span className="text-center">Show Detail</span>
                 </DialogTrigger>
-                <DialogContent className="w-full bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-sm rounded-3xl overflow-y-auto md:overflow-y-hidden max-h-80 md:max-h-fit">
+                <DialogContent className="w-full bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-sm rounded-3xl overflow-y-auto overflow-x-hidden md:overflow-y-hidden max-h-80 md:max-h-fit">
                   <DialogHeader>
-                    <DialogTitle className=" text-lg md:text-2xl text-center">
+                    <DialogTitle className="text-lg md:text-2xl text-center">
                       Book Details
                     </DialogTitle>
-                    <div className="md:flex  gap-10">
+                    <div className="md:flex gap-10">
                       <Image
                         src={book.coverImage || '/default-image.jpg'}
                         alt={book.title}
@@ -77,38 +77,42 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
                         blurDataURL="/default-image.jpg"
                         loading="lazy"
                       />
-                      <div className="md:max-w-full max-w-md space-y-3">
+                      <div className="md:max-w-md max-w-md space-y-3 px-4">
                         <p className="flex gap-2 text-md font-bold">
                           <span>Title: </span>
-                          <span>{book.title}</span>
+                          <span className="font-medium">{book.title}</span>
                         </p>
                         <p className="flex gap-2 text-md font-bold">
                           <span>Author: </span>
-                          <span>{book.author}</span>
+                          <span className="font-medium">{book.author}</span>
                         </p>
                         <p className="flex gap-2 text-md font-bold">
                           <span>ISBN: </span>
-                          <span>{book.isbn}</span>
+                          <span className="font-medium">{book.isbn}</span>
                         </p>
                         <p className="flex gap-2 text-md font-bold">
                           <span>Publisher: </span>
-                          <span>{book.publisher}</span>
+                          <span className="font-medium">{book.publisher}</span>
                         </p>
                         <p className="flex gap-2 text-md font-bold">
                           <span>Publication Place: </span>
-                          <span>{book.publication_place}</span>
+                          <span className="font-medium">
+                            {book.publication_place}
+                          </span>
                         </p>
-                        <p className="flex gap-2 text-md font-bold">
+                        <p className="flex gap-2 text-md font-bold ">
                           <span>Categories: </span>
-                          <span>{book.category?.substring(0, 100)}...</span>
+                          <span className="font-medium">
+                            {book.category?.substring(0, 100)}...
+                          </span>
                         </p>
                         <p className="flex gap-2 text-md font-bold">
                           <span>Language: </span>
-                          <span>{book.language}</span>
+                          <span className="font-medium">{book.language}</span>
                         </p>
                         <p className="flex gap-2 text-md font-bold">
                           <span>Pages: </span>
-                          <span>{book.pages}</span>
+                          <span className="font-medium">{book.pages}</span>
                         </p>
                         <p className="flex gap-2 text-md font-bold ">
                           <span>Status: </span>
@@ -122,13 +126,15 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
                         </p>
                       </div>
                     </div>
-                    <DialogDescription>{book.description}</DialogDescription>
+                    <DialogDescription className="text-zinc-800 dark:text-zinc-500">
+                      {book.description}
+                    </DialogDescription>
                   </DialogHeader>
                 </DialogContent>
               </Dialog>
             </div>
 
-            <div className="max-w-[10em] md:max-w-xl px-4  ">
+            <div className="max-w-[10em] md:max-w-[23em] px-4">
               <div>
                 <p className="flex-justify-center overflow-hidden rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
                   {book.category?.substring(0, 100)}...
@@ -137,7 +143,8 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
               <div className="mt-3">
                 <h2 className="text-md font-bold">{book.title}</h2>
                 <p className="text-gray-500">by {book.author}</p>
-                <p className="text-sm text-gray-700">
+
+                <p className="mt-3 text-sm text-zinc-700 dark:text-zinc-500 hidden md:block">
                   {book.description?.substring(0, 100)}...
                 </p>
               </div>

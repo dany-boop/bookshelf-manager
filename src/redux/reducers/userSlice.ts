@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { updateUserSuccess } from './authSlice';
+import { toast } from 'sonner';
 
 interface UserFormState {
   loading: boolean;
@@ -38,6 +39,7 @@ export const fetchUser = createAsyncThunk(
   async (id?: string) => {
     const response = await fetch(`/api/user/${id}`);
     if (!response.ok) {
+      toast.error('Failed to delete user');
       throw new Error('Failed to fetch user data');
     }
     return response.json();
@@ -55,13 +57,14 @@ export const updateUser = createAsyncThunk<
     });
     if (!response.ok) {
       const errorResponse = await response.json();
+      toast.error(errorResponse.message || 'Failed to edit user');
       throw new Error(errorResponse.error || 'Failed to update user');
     }
     const updatedUser = await response.json();
     if (updatedUser && updatedUser.username) {
       dispatch(updateUserSuccess(updatedUser));
     }
-
+    toast.success('Book updated successfully!');
     return updatedUser;
   } catch (error) {
     return 'Failed to update user';
