@@ -1,54 +1,34 @@
 'use client';
+
+import { cn } from '@/lib/utils';
+import Image, { ImageProps } from 'next/image';
 import { useState } from 'react';
-import Image from 'next/image';
 
-interface LoadingImageType {
-  src: string;
-  alt: string;
-  width?: number | `${number}`;
-  height?: number | `${number}`;
-  fill?: boolean;
+type OptimizedImageProps = ImageProps & {
   className?: string;
-  imageClassName?: string;
-  onLoadingComplete?: () => void;
-}
+  alt: string;
+};
 
-export const LoadingImage = ({
-  src,
-  alt,
-  width,
-  height,
-  fill = false,
+const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className,
-  imageClassName,
-  onLoadingComplete = () => {},
-}: LoadingImageType) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  const handleLoad = () => {
-    setIsLoading(false);
-    onLoadingComplete();
-  };
+  alt,
+  ...props
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
 
   return (
-    <div className={`${className}`}>
-      <div className="relative w-full h-full overflow-hidden">
-        {isLoading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-200/50  backdrop-blur-md">
-            {/* <Spinner className="w-6 h-6 text-gray-700" /> */}
-          </div>
+    <div className={cn('relative overflow-hidden', className)}>
+      <Image
+        {...props}
+        alt={alt}
+        className={cn(
+          'transition-opacity duration-700 ease-in-out',
+          isLoaded ? 'opacity-100' : 'opacity-0 blur-md'
         )}
-        <Image
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          className={`object-cover w-full h-full transition-transform duration-300 transform ${imageClassName}`}
-          onLoad={handleLoad}
-          {...(fill ? { fill } : { width, height })}
-          priority
-        />
-      </div>
+        onLoadingComplete={() => setIsLoaded(true)}
+      />
     </div>
   );
 };
+
+export default OptimizedImage;

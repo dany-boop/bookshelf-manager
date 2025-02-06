@@ -2,14 +2,6 @@
 import SearchBooks from '@/components/common/DebounceSearch';
 import CustomPagination from '@/components/ui/customPagination';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
   MultiSelectCombobox,
   SingleSelectCombobox,
 } from '@/components/ui/MultiSelect';
@@ -18,16 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { categories, languages, status_options } from '@/lib/data';
 import { fetchBooksData, setFilters } from '@/redux/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/redux/store';
-import Image from 'next/image';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import SkeletonLoader from '@/components/common/Skeleton/CardSkeleton';
 import BookCard from '@/components/common/BookCard';
 
-type Props = {};
-
-const CatalogContainer = (props: Props) => {
+const CatalogContainer = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { catalog, loading, error, pagination } = useSelector(
     (state: RootState) => state.books

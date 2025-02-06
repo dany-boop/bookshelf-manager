@@ -7,6 +7,7 @@ import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 const registerSchema = z.object({
@@ -63,13 +64,13 @@ const RegisterForm = () => {
       });
 
       if (res.ok) {
-        // toast.success('Registration successful! Please log in.');
+        toast.success('Registration successful! Please log in.');
         router.push('/auth/login');
       } else {
-        // toast.error(result.message || 'Something went wrong');
+        toast.error('Something went wrong');
       }
     } catch (error) {
-      //   toast.error('An error occurred. Please try again later.');
+      toast.error('An error occurred. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -137,9 +138,11 @@ const RegisterForm = () => {
           className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
         >
           {loading ? (
-            <span className="animate-spin text-center "></span>
+            <span className="animate-spin text-center ">
+              <Icon icon="mingcute:loading-fill" />
+            </span>
           ) : (
-            'Register'
+            'Login'
           )}
         </Button>
       </form>

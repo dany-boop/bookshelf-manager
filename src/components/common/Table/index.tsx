@@ -20,6 +20,14 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 type Props = {
   books: Book[];
@@ -35,12 +43,24 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
     key: keyof Book;
     direction: 'asc' | 'desc';
   } | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-
+  const [searchTerm] = useState('');
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleDelete = (bookId: number) => {
-    dispatch(deleteBook(bookId));
+  // Open delete confirmation dialog
+  const confirmDelete = (book: Book) => {
+    setSelectedBook(book);
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (selectedBook) {
+      dispatch(deleteBook(selectedBook.id));
+      toast.success(`Book "${selectedBook.title}" has been removed.`);
+    }
+    setIsDialogOpen(false);
+    setSelectedBook(null);
   };
 
   const handleSort = (key: keyof Book) => {
@@ -101,7 +121,30 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="rounded-2xl my-10 border bg-gradient-to-tr from-zinc-50 to-stone-50 dark:from-gray-800 dark:to-slate-800 dark:border-0 shadow-md py-10 px-5"
     >
-      {' '}
+      {/* delet confirmation dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-sm rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete "{selectedBook?.title}"?</p>
+          <DialogFooter>
+            <Button className="bg-red-500/30" onClick={handleDelete}>
+              <Icon
+                icon="solar:trash-bin-trash-bold-duotone"
+                width={50}
+                className=" text-red-500 w-20 "
+              />
+              <span className=" text-zinc-900 dark:text-zinc-50  ">Delete</span>
+            </Button>
+            <Button className=" bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50">
+              <span>Cancel</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* table started */}
       <div className="flex justify-between my-5">
         <h1 className="mx-5 text-lg font-semibold">Book Table</h1>
         <div className="flex gap-3 ">
@@ -259,7 +302,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
                         </Button>
                         <Button
                           className="flex justify-start px-2 py-2 w-full"
-                          onClick={() => handleDelete(book.id)}
+                          onClick={() => confirmDelete(book)}
                         >
                           <Icon
                             icon="solar:trash-bin-trash-bold-duotone"

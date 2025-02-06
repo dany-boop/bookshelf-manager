@@ -1,5 +1,6 @@
 'use client';
 import EditUserForm from '@/components/common/Form/UserForm';
+import OptimizedImage from '@/components/common/ImageLoading';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { fetchUser } from '@/redux/reducers/userSlice';
@@ -27,13 +28,13 @@ const ContainerProfile = (props: Props) => {
     <main className="w-full pb-24 ">
       <div className="relative bg-[--bg-container] shadow-md pb-14 rounded-xl overflow-hidden ">
         <div className="bg-[--color-accent] transition-all duration-1000 ease-in-out w-full bg-cover h-64 shadow-inner">
-          <Image
+          <OptimizedImage
             src="/assets/login-background.jpg"
             alt="username page background"
-            fill
-            quality={100}
+            fill={true}
             className="object-cover object-center"
           />
+          {/* <Image quality={100} /> */}
         </div>
         <div className="absolute flex top-48 left-10">
           <Avatar className=" h-28 w-28 shadow-md ">

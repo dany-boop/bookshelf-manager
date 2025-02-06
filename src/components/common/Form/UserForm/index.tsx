@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/form';
 import { resetEditUserState, updateUser } from '@/redux/reducers/userSlice';
 import { Icon } from '@iconify/react';
+import { Button } from '@/components/ui/button';
 
 interface UserFormProps {
   id?: string;
@@ -195,12 +196,18 @@ const EditUserForm: FC<UserFormProps> = ({ id, username, email, password }) => {
             />
           </div>
           <div className="flex items-center justify-end space-x-4 mt-5">
-            <button
+            <Button
               type="submit"
-              className="px-5 py-2 dark:bg-zinc-50 dark:text-gray-900 hover:dark:bg-zinc-100 hover:bg-gray-700 bg-gray-900 text-zinc-50 rounded-lg font-bold "
+              className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
             >
-              {editUserState.loading ? 'Saving...' : 'Save Changes'}
-            </button>
+              {editUserState.loading ? (
+                <span className="animate-spin text-center ">
+                  <Icon icon="mingcute:loading-fill" />
+                </span>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
           </div>
         </form>
       </Form>

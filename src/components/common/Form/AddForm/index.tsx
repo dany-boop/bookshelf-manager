@@ -26,6 +26,7 @@ import {
 import { categories, languages } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
+import { X } from 'lucide-react';
 
 interface BookFormProps {
   book?: Book | null;
@@ -99,6 +100,12 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
 
   return (
     <div className="bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-md p-6 rounded-lg max-w-2xl mx-auto shadow-md ">
+      <button
+        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none  disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+        onClick={onClose}
+      >
+        <X className="h-4 w-4" />
+      </button>
       <div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -284,14 +291,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 )}
               />
             </div>
-            <div className="flex items-center justify-end space-x-4 mt-5">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 bg-gray-300 rounded"
-              >
-                Cancel
-              </button>
+            <div className="flex items-center  mt-5">
               <Button
                 type="submit"
                 className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"

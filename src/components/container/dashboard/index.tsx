@@ -2,13 +2,12 @@
 import AddBookForm from '@/components/common/Form/AddForm';
 import BooksTable from '@/components/common/Table';
 import CustomPagination from '@/components/ui/customPagination';
-import { fetchBooksData, setCurrentPage } from '@/redux/reducers/bookSlice';
+import { fetchBooksData } from '@/redux/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Book } from '@prisma/client';
 import Image from 'next/image';
 import React, { FC, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
 type Props = {};
@@ -27,12 +26,6 @@ const DashboardContainer: FC = (props: Props) => {
     pagination,
   } = useSelector((state: RootState) => state.books);
   const userId = useSelector((state: RootState) => state.auth.user?.id);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(`Error: ${error}`);
-    }
-  }, [error]);
 
   useEffect(() => {
     if (userId) {

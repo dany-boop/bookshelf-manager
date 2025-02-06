@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import OptimizedImage from '../ImageLoading';
 
 type Props = {
   filteredBook?: any;
@@ -67,16 +68,18 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
                       Book Details
                     </DialogTitle>
                     <div className="md:flex gap-10">
-                      <Image
+                      <OptimizedImage
                         src={book.coverImage || '/default-image.jpg'}
                         alt={book.title}
                         width={200}
                         height={200}
                         className="w-40 md:w-56 bg-cover mb-2 rounded-xl mx-auto"
-                        placeholder="blur"
-                        blurDataURL="/default-image.jpg"
                         loading="lazy"
                       />
+                      {/* <Image
+                        placeholder="blur"
+                        blurDataURL="/default-image.jpg"
+                      /> */}
                       <div className="md:max-w-md max-w-md space-y-3 px-4">
                         <p className="flex gap-2 text-md font-bold">
                           <span>Title: </span>
