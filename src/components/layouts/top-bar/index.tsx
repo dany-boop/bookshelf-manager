@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import React, { FC, useState } from 'react';
 
 import { Icon } from '@iconify/react';
-import { ModeToggle } from '@/components/common/ThemeToggle';
+import { ModeToggle } from '@/components/common/theme-toggler';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/reducers/authSlice';
 import { RootState } from '@/redux/store';

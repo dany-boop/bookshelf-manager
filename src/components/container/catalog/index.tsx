@@ -1,5 +1,5 @@
 'use client';
-import SearchBooks from '@/components/common/DebounceSearch';
+import SearchBooks from '@/components/common/debounce-search';
 import CustomPagination from '@/components/ui/customPagination';
 import {
   MultiSelectCombobox,
@@ -13,8 +13,8 @@ import { AppDispatch, RootState } from '@/redux/store';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import SkeletonLoader from '@/components/common/Skeleton/CardSkeleton';
-import BookCard from '@/components/common/BookCard';
+import BookCard from '@/components/common/book-card';
+import SkeletonLoader from '@/components/common/skeleton/card-skeleton';
 
 const CatalogContainer = () => {
   const dispatch = useDispatch<AppDispatch>();

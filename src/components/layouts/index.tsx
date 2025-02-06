@@ -1,8 +1,8 @@
 'use client';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
-import TopBar from './topBar';
-import Sidebar from './sideBar';
+import TopBar from './top-bar';
+import Sidebar from './side-bar';
 // import Sidebar from './SideBar';
 // import TopBar from './TopBar';
 

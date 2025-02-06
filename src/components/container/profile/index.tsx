@@ -1,6 +1,6 @@
 'use client';
-import EditUserForm from '@/components/common/Form/UserForm';
-import OptimizedImage from '@/components/common/ImageLoading';
+import EditUserForm from '@/components/common/forms/user-form';
+import OptimizedImage from '@/components/common/image-loading';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { fetchUser } from '@/redux/reducers/userSlice';

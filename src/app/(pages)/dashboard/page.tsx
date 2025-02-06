@@ -1,10 +1,10 @@
+import { useLoadingScreen } from '@/app/use-loading-screen';
+import LoadingScreen from '@/components/common/page-loading';
 import DashboardContainer from '@/components/container/dashboard';
 import MainLayout from '@/components/layouts';
 import React from 'react';
 
-type Props = {};
-
-const Dashboard = (props: Props) => {
+const Dashboard = () => {
   return (
     <main>
       <MainLayout>

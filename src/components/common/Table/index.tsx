@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Book } from '@prisma/client';
-import SearchBooks from '../DebounceSearch';
+import SearchBooks from '../debounce-search';
 import { useDispatch } from 'react-redux';
 import { deleteBook } from '@/redux/reducers/bookSlice';
 import { AppDispatch } from '@/redux/store';

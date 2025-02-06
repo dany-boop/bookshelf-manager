@@ -1,10 +1,10 @@
+import { useLoadingScreen } from '@/app/use-loading-screen';
+import LoadingScreen from '@/components/common/page-loading';
 import ContainerProfile from '@/components/container/profile';
 import MainLayout from '@/components/layouts';
 import React from 'react';
 
-type Props = {};
-
-const Profile = (props: Props) => {
+const Profile = () => {
   return (
     <main>
       <MainLayout>

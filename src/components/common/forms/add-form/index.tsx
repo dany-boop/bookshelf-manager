@@ -33,6 +33,14 @@ interface BookFormProps {
   onClose: () => void;
 }
 
+const isValidISBN = (isbn: string) => {
+  const isbn10 = /^(?:\d{9}X|\d{10})$/;
+  const isbn13 = /^(?:\d{13})$/;
+  return (
+    isbn10.test(isbn.replace(/-/g, '')) || isbn13.test(isbn.replace(/-/g, ''))
+  );
+};
+
 const bookSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   author: z.string().min(1, 'Author is required'),
@@ -41,12 +49,43 @@ const bookSchema = z.object({
     errorMap: () => ({ message: 'Status is required' }),
   }),
   description: z.string().optional(),
-  publisher: z.string({ message: 'Publisher is required' }),
+  publisher: z.string().min(1, 'Publisher is required'),
   publication_place: z.string().optional(),
-  isbn: z.string().optional(),
-  pages: z.string().optional(),
+
+  isbn: z
+    .string()
+    .optional()
+    .refine((val) => !val || isValidISBN(val), {
+      message: 'Invalid ISBN! Must be ISBN-10 or ISBN-13 format.',
+    }),
+
+  pages: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+$/.test(val), {
+      message: 'Pages must be a valid number.',
+    }),
+
   language: z.string().optional(),
-  coverImage: z.any().optional(),
+
+  coverImage: z
+    .custom<FileList | null>((val) => val instanceof FileList || val === null)
+    .optional()
+    .refine(
+      (val) => !val || val.length === 0 || val[0].size <= 5 * 1024 * 1024,
+      {
+        message: 'Cover image must be smaller than 5MB.',
+      }
+    )
+    .refine(
+      (val) =>
+        !val ||
+        val.length === 0 ||
+        ['image/jpeg', 'image/png', 'image/webp'].includes(val[0].type),
+      {
+        message: 'Cover image must be in JPG, PNG, or WEBP format.',
+      }
+    ),
 });
 
 const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
@@ -278,13 +317,15 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
               <FormField
                 control={form.control}
                 name="coverImage"
-                render={({ field: { onChange } }) => (
+                render={({ field: { onChange, ref, value, ...rest } }) => (
                   <FormItem>
                     <FormControl>
-                      <NormalInput
+                      <input
                         type="file"
-                        accept="image/*"
-                        onChange={(e) => onChange(e.target.files?.[0])}
+                        accept="image/jpeg, image/png, image/webp"
+                        ref={ref}
+                        onChange={(e) => onChange(e.target.files)}
+                        {...rest}
                       />
                     </FormControl>
                   </FormItem>

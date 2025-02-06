@@ -1,5 +1,7 @@
-import RegisterForm from '@/components/common/Form/RegisterForm';
-import { ModeToggle } from '@/components/common/ThemeToggle';
+import { useLoadingScreen } from '@/app/use-loading-screen';
+import RegisterForm from '@/components/common/forms/register-form';
+import LoadingScreen from '@/components/common/page-loading';
+import { ModeToggle } from '@/components/common/theme-toggler';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';

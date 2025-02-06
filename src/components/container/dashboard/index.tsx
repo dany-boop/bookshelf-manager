@@ -1,6 +1,6 @@
 'use client';
-import AddBookForm from '@/components/common/Form/AddForm';
-import BooksTable from '@/components/common/Table';
+import AddBookForm from '@/components/common/forms/add-form';
+import BooksTable from '@/components/common/table';
 import CustomPagination from '@/components/ui/customPagination';
 import { fetchBooksData } from '@/redux/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/redux/store';
