@@ -52,29 +52,38 @@ const bookSchema = z.object({
   publisher: z.string().optional(),
   publication_place: z.string().optional(),
 
-  isbn: z.string().refine((val) => !val || isValidISBN(val), {
-    message: 'Invalid ISBN! Must be ISBN-10 or ISBN-13 format.',
-  }),
+  isbn: z
+    .string()
+    .refine(
+      (val) => !val || /^(?:\d{9}X|\d{10}|\d{13})$/.test(val.replace(/-/g, '')),
+      {
+        message: 'Invalid ISBN! Must be ISBN-10 or ISBN-13 format.',
+      }
+    ),
 
-  pages: z.string().refine((val) => !val || /^\d+$/.test(val), {
-    message: 'Pages must be a valid number.',
-  }),
+  pages: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+$/.test(val), {
+      message: 'Pages must be a valid number.',
+    }),
 
   language: z.string().optional(),
 
   coverImage: z
-    .custom<FileList | null>((val) => val instanceof FileList || val === null)
+    .instanceof(FileList)
     .refine(
-      (val) => !val || val.length === 0 || val[0].size <= 5 * 1024 * 1024,
+      (files) =>
+        !files || files.length === 0 || files[0].size <= 5 * 1024 * 1024,
       {
         message: 'Cover image must be smaller than 5MB.',
       }
     )
     .refine(
-      (val) =>
-        !val ||
-        val.length === 0 ||
-        ['image/jpeg', 'image/png', 'image/webp'].includes(val[0].type),
+      (files) =>
+        !files ||
+        files.length === 0 ||
+        ['image/jpeg', 'image/png', 'image/webp'].includes(files[0].type),
       {
         message: 'Cover image must be in JPG, PNG, or WEBP format.',
       }
@@ -101,7 +110,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
       isbn: book?.isbn || '',
       pages: book?.pages?.toString(),
       language: book?.language || '',
-      coverImage: null,
+      coverImage: undefined,
     },
   });
 
@@ -252,6 +261,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                     <FormControl>
                       <NormalInput {...field} placeholder="ISBN" />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -313,14 +323,15 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 render={({ field: { onChange, ref, value, ...rest } }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
+                      <NormalInput
                         type="file"
                         accept="image/jpeg, image/png, image/webp"
                         ref={ref}
-                        onChange={(e: any) => onChange(e.target.files)}
-                        {...rest}
+                        onChange={(e) => onChange(e.target.files || undefined)}
+                        // {...rest}
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
