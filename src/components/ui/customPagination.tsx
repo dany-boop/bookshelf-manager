@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import {
   Pagination,
   PaginationContent,
@@ -9,17 +8,20 @@ import {
   PaginationEllipsis,
 } from '@/components/ui/pagination'; // Import ShadCN Pagination components
 import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentPage } from '@/redux/reducers/bookSlice';
+import { setCurrentPage, setLimit } from '@/redux/reducers/bookSlice';
 import { RootState, AppDispatch } from '@/redux/store';
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
+  limit: number;
 }
+const LIMIT_OPTIONS = [10, 15, 25, 50, 100];
 
 const CustomPagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
+  limit,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -30,11 +32,34 @@ const CustomPagination: React.FC<PaginationProps> = ({
     }
   };
 
+  // handling limit value
+  const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLimit = parseInt(e.target.value, 10);
+    dispatch(setLimit(newLimit));
+    dispatch(setCurrentPage(1)); // Reset to page 1 when changing limit
+  };
+
   return (
     <Pagination>
       <PaginationContent
       // className="absolute bottom-5"
       >
+        {/* Limit Selector */}
+        <div>
+          <label className="mr-2">Show</label>
+          <select
+            value={limit}
+            onChange={handleLimitChange}
+            className="p-2 border rounded"
+          >
+            {LIMIT_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+          <span className="ml-2">per page</span>
+        </div>
         <PaginationItem>
           <PaginationPrevious
             onClick={(e) => {

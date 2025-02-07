@@ -18,6 +18,7 @@ export interface BooksState {
   pagination: {
     currentPage: number;
     totalPages: number;
+    limit: number;
   };
   filters: {
     category: string[];
@@ -39,6 +40,7 @@ const initialState: BooksState = {
   pagination: {
     currentPage: 1,
     totalPages: 1,
+    limit: 15,
   },
   filters: {
     category: [],
@@ -73,14 +75,17 @@ export const fetchBooksData = createAsyncThunk<
   },
   {
     page: number;
+    limit: number;
     query?: string;
     filters?: { category?: string[]; status?: string; language?: string };
     userId: string;
   }
->('books/fetchBooksData', async ({ page, filters, userId, query }) => {
+>('books/fetchBooksData', async ({ page, limit, filters, userId, query }) => {
   const params = new URLSearchParams();
   params.set('page', page.toString());
+  params.set('limit', limit.toString());
   params.set('userId', userId);
+
   if (query) params.set('query', query);
   if (filters?.status) params.set('status', filters.status);
   if (filters?.language) params.set('language', filters.language);
@@ -161,6 +166,9 @@ const booksSlice = createSlice({
   name: 'books',
   initialState,
   reducers: {
+    setLimit: (state, action) => {
+      state.pagination.limit = action.payload;
+    },
     setCurrentPage: (state, action) => {
       state.pagination.currentPage = action.payload;
     },
@@ -275,6 +283,7 @@ const booksSlice = createSlice({
 
 export const {
   setFilters,
+  setLimit,
   setCurrentPage,
   resetAddBookState,
   resetEditBookState,

@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { NormalInput } from '@/components/ui/input';
+import { Input, NormalInput } from '@/components/ui/input';
 import {
   addBook,
   editBook,
@@ -49,28 +49,21 @@ const bookSchema = z.object({
     errorMap: () => ({ message: 'Status is required' }),
   }),
   description: z.string().optional(),
-  publisher: z.string().min(1, 'Publisher is required'),
+  publisher: z.string().optional(),
   publication_place: z.string().optional(),
 
-  isbn: z
-    .string()
-    .optional()
-    .refine((val) => !val || isValidISBN(val), {
-      message: 'Invalid ISBN! Must be ISBN-10 or ISBN-13 format.',
-    }),
+  isbn: z.string().refine((val) => !val || isValidISBN(val), {
+    message: 'Invalid ISBN! Must be ISBN-10 or ISBN-13 format.',
+  }),
 
-  pages: z
-    .string()
-    .optional()
-    .refine((val) => !val || /^\d+$/.test(val), {
-      message: 'Pages must be a valid number.',
-    }),
+  pages: z.string().refine((val) => !val || /^\d+$/.test(val), {
+    message: 'Pages must be a valid number.',
+  }),
 
   language: z.string().optional(),
 
   coverImage: z
     .custom<FileList | null>((val) => val instanceof FileList || val === null)
-    .optional()
     .refine(
       (val) => !val || val.length === 0 || val[0].size <= 5 * 1024 * 1024,
       {
@@ -320,11 +313,11 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 render={({ field: { onChange, ref, value, ...rest } }) => (
                   <FormItem>
                     <FormControl>
-                      <input
+                      <Input
                         type="file"
                         accept="image/jpeg, image/png, image/webp"
                         ref={ref}
-                        onChange={(e) => onChange(e.target.files)}
+                        onChange={(e: any) => onChange(e.target.files)}
                         {...rest}
                       />
                     </FormControl>

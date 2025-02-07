@@ -29,6 +29,7 @@ const CatalogContainer = () => {
       dispatch(
         fetchBooksData({
           page: pagination.currentPage,
+          limit: pagination.limit,
           userId,
           filters: {
             status: filters.status,
@@ -37,7 +38,7 @@ const CatalogContainer = () => {
         })
       );
     }
-  }, [dispatch, filters, userId, pagination.currentPage]);
+  }, [dispatch, filters, userId, pagination.currentPage, pagination.limit]);
 
   useEffect(() => {
     if (error) {
@@ -73,7 +74,11 @@ const CatalogContainer = () => {
     <main>
       <div className="">
         <div className="md:flex gap-3 md:justify-between">
-          <SearchBooks userId={userId} className="w-80 mb-10" />
+          <SearchBooks
+            userId={userId}
+            className="w-80 mb-10"
+            limit={pagination.limit}
+          />
           <div className="flex gap-8 my-3 md:my-0">
             <MultiSelectCombobox
               options={categories}
@@ -140,6 +145,7 @@ const CatalogContainer = () => {
         </Tabs>
 
         <CustomPagination
+          limit={pagination.limit}
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
         />

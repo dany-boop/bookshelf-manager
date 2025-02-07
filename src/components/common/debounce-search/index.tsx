@@ -8,10 +8,12 @@ import { cn } from '@/lib/utils';
 interface SearchBooksProps {
   userId: string | undefined;
   className?: React.ReactNode;
+  limit: number;
 }
 const SearchBooks: React.FC<SearchBooksProps> = ({
   userId,
   className,
+  limit,
   ...props
 }) => {
   const [query, setQuery] = useState<string>('');
@@ -28,7 +30,7 @@ const SearchBooks: React.FC<SearchBooksProps> = ({
   useEffect(() => {
     const validUserId = userId || '';
     if ((validUserId && query.length >= 3) || query === '') {
-      dispatch(fetchBooksData({ page, query, userId: validUserId }));
+      dispatch(fetchBooksData({ page, query, userId: validUserId, limit }));
     }
   }, [query, page, userId, dispatch]);
 

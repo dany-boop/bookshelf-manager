@@ -35,9 +35,17 @@ type Props = {
   title?: string;
   openForm: (book?: Book | null | undefined) => void;
   userId: string | undefined;
+  limit: number;
 };
 
-const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
+const BooksTable: FC<Props> = ({
+  books,
+  loading,
+  title,
+  openForm,
+  userId,
+  limit,
+}) => {
   const tableRef = useRef(null);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Book;
@@ -158,7 +166,7 @@ const BooksTable: FC<Props> = ({ books, loading, title, openForm, userId }) => {
               className=" text-green-600 hover:text-green-500"
             />
           </button>
-          <SearchBooks userId={userId} />
+          <SearchBooks userId={userId} limit={limit} />
         </div>
       </div>
       <Table ref={tableRef} className="overflow-x-scroll ">

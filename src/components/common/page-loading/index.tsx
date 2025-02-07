@@ -1,8 +1,27 @@
+'use client';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
+import { FC, useEffect, useState } from 'react';
 
-const LoadingScreen = () => {
+interface loadingProps {
+  delay: number;
+}
+const LoadingScreen = ({ delay }: loadingProps) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const step = 100 / (delay / 100); // Calculate step size based on delay
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        const nextValue = prev + step;
+        return nextValue >= 100 ? 100 : nextValue;
+      });
+    }, 100); // Update every 100ms
+
+    return () => clearInterval(interval);
+  }, [delay]);
+
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900">
       {/* Spinning Green Lines */}
@@ -35,9 +54,8 @@ const LoadingScreen = () => {
           loading="lazy"
         />
       </div>
-
       {/* Loading Progress Bar */}
-      <Progress className="w-40 mt-6" value={50} />
+      <Progress className=" w-52 mt-6 h-3" value={progress} />
     </div>
   );
 };

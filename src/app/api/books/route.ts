@@ -38,11 +38,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   // Build the Prisma "where" filter.
   const where: any = { userId };
 
-  // if (category) {
-  //   where.OR = category.split(',').map((cat) => ({
-  //     category: { contains: cat.trim(), mode: 'insensitive' },
-  //   }));
-  // }
   if (category) {
     where.OR = category.split(',').map((cat) => ({
       category: { has: cat.trim() },

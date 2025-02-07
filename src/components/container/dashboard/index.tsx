@@ -16,23 +16,22 @@ const DashboardContainer: FC = (props: Props) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const dispatch = useDispatch<AppDispatch>();
-  const {
-    readBooks,
-    totalBooks,
-    finishedBooks,
-    catalog,
-    loading,
-    error,
-    pagination,
-  } = useSelector((state: RootState) => state.books);
+  const { readBooks, totalBooks, finishedBooks, catalog, loading, pagination } =
+    useSelector((state: RootState) => state.books);
   const userId = useSelector((state: RootState) => state.auth.user?.id);
 
   useEffect(() => {
     if (userId) {
-      dispatch(fetchBooksData({ page: pagination.currentPage, userId })); // Pass userId along with page
+      dispatch(
+        fetchBooksData({
+          page: pagination.currentPage,
+          limit: pagination.limit,
+          userId,
+        })
+      ); // Pass userId along with page
     } else {
     }
-  }, [dispatch, pagination.currentPage, userId]);
+  }, [dispatch, pagination.limit, pagination.currentPage, userId]);
 
   const openForm = (book?: Book | null | undefined) => {
     setSelectedBook(book || null); // Pass the selected book to the form
@@ -120,9 +119,11 @@ const DashboardContainer: FC = (props: Props) => {
               openForm={openForm}
               loading={loading}
               userId={userId}
+              limit={pagination.limit}
             />
             <div>
               <CustomPagination
+                limit={pagination.limit}
                 currentPage={pagination.currentPage}
                 totalPages={pagination.totalPages}
               />
