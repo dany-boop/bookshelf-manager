@@ -2,11 +2,9 @@
 import EditUserForm from '@/components/common/forms/user-form';
 import OptimizedImage from '@/components/common/image-loading';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
 import { fetchUser } from '@/redux/reducers/userSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Icon } from '@iconify/react';
-import Image from 'next/image';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -26,14 +24,17 @@ const ContainerProfile = (props: Props) => {
 
   return (
     <main className="w-full pb-24 ">
-      <div className="relative bg-[--bg-container] shadow-md pb-14 rounded-xl overflow-hidden ">
-        <div className="bg-[--color-accent] transition-all duration-1000 ease-in-out w-full bg-cover h-64 shadow-inner">
+      <div className="relative  shadow-md pb-14 rounded-xl overflow-hidden ">
+        <div className=" w-full bg-cover h-64 shadow-inner overflow-hidden">
           <OptimizedImage
             src="/assets/login-background.jpg"
             alt="username page background"
-            fill={true}
+            fill
+            quality={100}
+            loading="lazy"
             className="object-cover object-center"
           />
+
           {/* <Image quality={100} /> */}
         </div>
         <div className="absolute flex top-48 left-10">

@@ -17,13 +17,19 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
-    <div className={cn('relative overflow-hidden', className)}>
+    <div
+      className={cn(
+        'relative overflow-hidden',
+        props.fill ? 'absolute inset-0' : '',
+        className
+      )}
+    >
       <Image
         {...props}
         alt={alt}
         className={cn(
           'transition-opacity duration-700 ease-in-out',
-          isLoaded ? 'opacity-100' : 'opacity-0 blur-md'
+          isLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-xl' // ✅ Backdrop blur effect
         )}
         onLoadingComplete={() => setIsLoaded(true)}
       />

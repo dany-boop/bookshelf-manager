@@ -1,5 +1,6 @@
 import ClientLoader from '@/app/use-loading-screen';
 import LoginForm from '@/components/common/forms/login-form';
+import OptimizedImage from '@/components/common/image-loading';
 import { ModeToggle } from '@/components/common/theme-toggler';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,7 +15,7 @@ const Login = () => {
         </div>
         <section className="hidden md:block md:col-span-2 ">
           <div className="h-full w-full  overflow-hidden">
-            <Image
+            <OptimizedImage
               src="/assets/login-background.jpg"
               alt="Background"
               fill
