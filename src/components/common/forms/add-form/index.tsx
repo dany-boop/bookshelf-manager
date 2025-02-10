@@ -54,6 +54,7 @@ const bookSchema = z.object({
 
   isbn: z
     .string()
+    .min(1, 'ISBN is required')
     .refine(
       (val) => !val || /^(?:\d{9}X|\d{10}|\d{13})$/.test(val.replace(/-/g, '')),
       {

@@ -279,7 +279,7 @@ const BooksTable: FC<Props> = ({
                     <p
                       className={`${getStatusClass(
                         book.status
-                      )} rounded-full text-md p-1 px-2 shadow-md`}
+                      )} flex align-middle rounded-full text-md p-1 px-2 shadow-md my-auto`}
                     >
                       {book.status}
                     </p>
