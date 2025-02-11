@@ -113,11 +113,16 @@ async function saveImage(file: File): Promise<string | null> {
 
 async function uploadToSupabase(file: File): Promise<string | null> {
   try {
+    if (!file.name) {
+      console.error('Error: File does not have a name.');
+      return null;
+    }
+
     const fileExt = path.extname(file.name);
     const fileName = `${nanoid()}${fileExt}`;
     const filePath = `book/${fileName}`;
-    const imageBuffer = Buffer.from(await file.arrayBuffer());
 
+    const imageBuffer = Buffer.from(await file.arrayBuffer());
     // Optimize if > 1MB
     let optimizedBuffer = imageBuffer;
     if (file.size > ONE_MB) {

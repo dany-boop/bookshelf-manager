@@ -118,7 +118,15 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
   const onSubmit = (values: z.infer<typeof bookSchema>) => {
     const formBody = new FormData();
     Object.entries(values).forEach(([key, value]) => {
-      if (value) formBody.append(key, value as string);
+      if (
+        key === 'coverImage' &&
+        value instanceof FileList &&
+        value.length > 0
+      ) {
+        formBody.append(key, value[0]); // Append actual file
+      } else if (value) {
+        formBody.append(key, value as string);
+      }
     });
 
     if (user) formBody.append('userId', user.id);
@@ -321,15 +329,13 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
               <FormField
                 control={form.control}
                 name="coverImage"
-                render={({ field: { onChange, ref, value, ...rest } }) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <NormalInput
                         type="file"
                         accept="image/jpeg, image/png, image/webp"
-                        ref={ref}
-                        onChange={(e) => onChange(e.target.files || undefined)}
-                        // {...rest}
+                        onChange={(e) => field.onChange(e.target.files)}
                       />
                     </FormControl>
                     <FormMessage />
