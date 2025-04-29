@@ -4,6 +4,7 @@ import './globals.css';
 import StoreProvider from '@/redux/storeProvider';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from './theme-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -41,7 +42,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Toaster position="top-center" richColors />
-            {children}
+            <TooltipProvider>{children}</TooltipProvider>
           </ThemeProvider>
         </body>
       </html>

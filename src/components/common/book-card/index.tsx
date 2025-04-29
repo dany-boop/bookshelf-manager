@@ -10,6 +10,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import OptimizedImage from '../image-loading';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type Props = {
   filteredBook?: any;
@@ -49,13 +54,13 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
           <div className="flex gap-5">
             <div className="relative md:min-w-40">
               <Image
-                src={book.coverImage || '/default-image.jpg'}
+                src={book.coverImage || '/assets/default-image.png'}
                 alt={book.title}
                 width={200}
                 height={200}
                 className="min-w-40 w-40 h-60 bg-cover mb-2 rounded-xl"
-                placeholder="blur"
-                blurDataURL="/default-image.jpg"
+                // placeholder="blur"
+                // blurDataURL="/assets/default-image.png"
                 loading="lazy"
               />
               <Dialog>
@@ -65,59 +70,126 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
                 <DialogContent className="w-full bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-sm rounded-3xl overflow-y-auto overflow-x-hidden md:overflow-y-hidden max-h-80 md:max-h-fit">
                   <DialogHeader>
                     <DialogTitle className="text-lg md:text-2xl text-center">
-                      Book Details
+                      {/* Book Details */}
+                      {book.title}
                     </DialogTitle>
-                    <div className="md:flex gap-10">
+                    <div className="md:flex gap-10 ">
                       <OptimizedImage
-                        src={book.coverImage || '/default-image.jpg'}
+                        src={book.coverImage || '/assets/default-image.png'}
                         alt={book.title}
                         width={200}
                         height={200}
                         className="w-40 md:w-56 bg-cover mb-2 rounded-xl mx-auto"
                         loading="lazy"
                       />
-                      {/* <Image
-                        placeholder="blur"
-                        blurDataURL="/default-image.jpg"
-                      /> */}
-                      <div className="md:max-w-md max-w-md space-y-3 px-4">
-                        <p className="flex gap-2 text-md font-bold">
+
+                      <div className="md:max-w-lg max-w-md space-y-3 px-4">
+                        {/* <p className="flex gap-2 text-md font-bold">
                           <span>Title: </span>
-                          <span className="font-medium">{book.title}</span>
-                        </p>
-                        <p className="flex gap-2 text-md font-bold">
+                          <span className="font-medium text-black dark:text-zinc-200">{book.title}</span>
+                        </p> */}
+                        <p className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400">
                           <span>Author: </span>
-                          <span className="font-medium">{book.author}</span>
+                          <span className="font-medium text-black dark:text-zinc-200">
+                            {book.author}
+                          </span>
                         </p>
-                        <p className="flex gap-2 text-md font-bold">
+                        <p className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400">
                           <span>ISBN: </span>
-                          <span className="font-medium">{book.isbn}</span>
+                          <span className="font-medium text-black dark:text-zinc-200">
+                            {book.isbn}
+                          </span>
                         </p>
-                        <p className="flex gap-2 text-md font-bold">
+                        <p className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400">
                           <span>Publisher: </span>
-                          <span className="font-medium">{book.publisher}</span>
+                          <span className="font-medium text-black dark:text-zinc-200">
+                            {book.publisher}
+                          </span>
                         </p>
-                        <p className="flex gap-2 text-md font-bold">
+                        <p className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400">
                           <span>Publication Place: </span>
-                          <span className="font-medium">
+                          <span className="font-medium text-black dark:text-zinc-200">
                             {book.publication_place}
                           </span>
                         </p>
-                        <p className="flex gap-2 text-md font-bold ">
+                        <div className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400 ">
                           <span>Categories: </span>
-                          <span className="font-medium">
-                            {book.category?.substring(0, 100)}...
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            {book.categories
+                              ?.slice(0, 2)
+                              .map((category: any) => (
+                                <p
+                                  key={category.id}
+                                  className="rounded-full bg-blue-500/30 text-blue-500 p-1 text-sm px-2 shadow-md"
+                                >
+                                  {category.name}
+                                </p>
+                              ))}
+                            {(book.categories?.length ?? 0) > 2 && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p className="rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md text-sm cursor-help">
+                                    +{(book.categories?.length ?? 0) - 2}
+                                  </p>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-[200px]">
+                                  <div className="flex flex-wrap gap-2 p-1">
+                                    {book.categories
+                                      ?.slice(2)
+                                      .map((category: any) => (
+                                        <span
+                                          key={category.id}
+                                          className="rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 text-xs"
+                                        >
+                                          {category.name}
+                                        </span>
+                                      ))}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </div>
+                        <p className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400">
+                          <span>Language: </span>
+                          <span className="font-medium text-black dark:text-zinc-200">
+                            {book.language}
                           </span>
                         </p>
-                        <p className="flex gap-2 text-md font-bold">
-                          <span>Language: </span>
-                          <span className="font-medium">{book.language}</span>
-                        </p>
-                        <p className="flex gap-2 text-md font-bold">
+                        <p className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400">
                           <span>Pages: </span>
-                          <span className="font-medium">{book.pages}</span>
+                          <span className="font-medium text-black dark:text-zinc-200">
+                            {book.pages}
+                          </span>
                         </p>
-                        <p className="flex gap-2 text-md font-bold ">
+                        <div className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400">
+                          <span>Progress: </span>
+                          <div className="font-medium text-black dark:text-zinc-200 items">
+                            {book?.readingProgress !== undefined ? (
+                              <div className="flex  items-center gap-1">
+                                <div className="w-24 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full">
+                                  <div
+                                    className="h-full bg-green-500 rounded-full transition-all"
+                                    style={{
+                                      width: `${Math.min(
+                                        book?.readingProgress,
+                                        100
+                                      ).toFixed(1)}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                  {book?.readingProgress.toFixed(1)}%
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                -
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <p className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400 ">
                           <span>Status: </span>
                           <span
                             className={`${getStatusClass(
@@ -138,10 +210,36 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
             </div>
 
             <div className="max-w-[10em] md:max-w-[23em] px-4">
-              <div>
-                <p className="flex-justify-center overflow-hidden rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
-                  {book.category?.substring(0, 100)}...
-                </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {book.categories?.slice(0, 2).map((category: any) => (
+                  <p
+                    key={category.id}
+                    className="rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md"
+                  >
+                    {category.name}
+                  </p>
+                ))}
+                {(book.categories?.length ?? 0) > 2 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className="rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md text-sm cursor-help">
+                        +{(book.categories?.length ?? 0) - 2}
+                      </p>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[200px]">
+                      <div className="flex flex-wrap gap-2 p-1">
+                        {book.categories?.slice(2).map((category: any) => (
+                          <span
+                            key={category.id}
+                            className="rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 text-xs"
+                          >
+                            {category.name}
+                          </span>
+                        ))}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
               <div className="mt-3">
                 <h2 className="text-md font-bold">{book.title}</h2>

@@ -9,7 +9,7 @@ import {
   TableBody,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Book } from '@prisma/client';
+import { Book as PrismaBook } from '@prisma/client';
 import SearchBooks from '../debounce-search';
 import { useDispatch } from 'react-redux';
 import { deleteBook } from '@/redux/reducers/bookSlice';
@@ -28,12 +28,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
+type Categories = {
+  id: number;
+  name: string;
+};
+type ExtendedBook = PrismaBook & {
+  readingProgress?: number;
+  categories?: Categories[];
+};
 
 type Props = {
-  books: Book[];
+  books: ExtendedBook[];
   loading?: boolean;
   title?: string;
-  openForm: (book?: Book | null | undefined) => void;
+  openForm: (book?: ExtendedBook | null | undefined) => void;
   userId: string | undefined;
   limit: number;
 };
@@ -48,16 +58,16 @@ const BooksTable: FC<Props> = ({
 }) => {
   const tableRef = useRef(null);
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof Book;
+    key: keyof ExtendedBook;
     direction: 'asc' | 'desc';
   } | null>(null);
   const [searchTerm] = useState('');
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [selectedBook, setSelectedBook] = useState<ExtendedBook | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
 
   // Open delete confirmation dialog
-  const confirmDelete = (book: Book) => {
+  const confirmDelete = (book: ExtendedBook) => {
     setSelectedBook(book);
     setIsDialogOpen(true);
   };
@@ -71,7 +81,7 @@ const BooksTable: FC<Props> = ({
     setSelectedBook(null);
   };
 
-  const handleSort = (key: keyof Book) => {
+  const handleSort = (key: keyof ExtendedBook) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key) {
       direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
@@ -84,8 +94,8 @@ const BooksTable: FC<Props> = ({
     let sortableBooks = [...books];
     if (sortConfig) {
       sortableBooks.sort((a, b) => {
-        const aValue = a[sortConfig.key] ?? '';
-        const bValue = b[sortConfig.key] ?? '';
+        const aValue = a[sortConfig.key as keyof ExtendedBook] ?? '';
+        const bValue = b[sortConfig.key as keyof ExtendedBook] ?? '';
         if (aValue === undefined && bValue === undefined) return 0;
         if (aValue === undefined) return 1;
         if (bValue === undefined) return -1;
@@ -207,12 +217,30 @@ const BooksTable: FC<Props> = ({
               </span>
             </TableCell>
             <TableCell
-              onClick={() => handleSort('category')}
+              onClick={() => handleSort('categories')}
               className="cursor-pointer font-bold"
             >
               <span className="flex gap-3 justify-center">
                 Category{' '}
-                {sortConfig?.key === 'category' ? (
+                {sortConfig?.key === 'categories' ? (
+                  sortConfig.direction === 'asc' ? (
+                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
+                  ) : (
+                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
+                  )
+                ) : (
+                  ''
+                )}
+              </span>
+            </TableCell>
+
+            <TableCell
+              onClick={() => handleSort('readingProgress')}
+              className="cursor-pointer font-bold"
+            >
+              <span className="flex gap-3 justify-center">
+                Progress
+                {sortConfig?.key === 'readingProgress' ? (
                   sortConfig.direction === 'asc' ? (
                     <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
                   ) : (
@@ -270,11 +298,60 @@ const BooksTable: FC<Props> = ({
                     <span className="flex justify-start">{book.author}</span>
                   </TableCell>
                   <TableCell className="">
-                    <p className="flex-justify-center rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md">
-                      {book.category}
-                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {book.categories?.slice(0, 2).map((category) => (
+                        <p
+                          key={category.id}
+                          className="rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md"
+                        >
+                          {category.name}
+                        </p>
+                      ))}
+                      {(book.categories?.length ?? 0) > 2 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 shadow-md text-sm cursor-help">
+                              +{(book.categories?.length ?? 0) - 2}
+                            </p>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[200px]">
+                            <div className="flex flex-wrap gap-2 p-1">
+                              {book.categories?.slice(2).map((category) => (
+                                <span
+                                  key={category.id}
+                                  className="rounded-full bg-blue-500/30 text-blue-500 p-1 px-2 text-xs"
+                                >
+                                  {category.name}
+                                </span>
+                              ))}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
                   </TableCell>
-
+                  <TableCell className="text-center">
+                    {book?.readingProgress !== undefined ? (
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-24 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full">
+                          <div
+                            className="h-full bg-green-500 rounded-full transition-all"
+                            style={{
+                              width: `${Math.min(
+                                book?.readingProgress,
+                                100
+                              ).toFixed(1)}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {book?.readingProgress.toFixed(1)}%
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
                   <TableCell className="flex justify-center">
                     <p
                       className={`${getStatusClass(

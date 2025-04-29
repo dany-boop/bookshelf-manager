@@ -20,14 +20,32 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  username  String
-  photo_url String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Book      Book[]
+  id                      String            @id @default(cuid())
+  email                   String            @unique
+  password                String
+  username                String
+  photo_url               String?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  books                   Book[]
+  readingProgress         ReadingProgress[]
+  sentRequests            Friendship[]      @relation("FriendshipSender")
+  receivedRequests        Friendship[]      @relation("FriendshipReceiver")
+  sentRecommendations     Recommendation[]  @relation("RecommendationSender") // Inverse of `sender` in Recommendation
+  receivedRecommendations Recommendation[]  @relation("RecommendationReceiver") // Inverse of `receiver` in Recommendation
+}
+
+model Recommendation {
+  id         String   @id @default(uuid())
+  bookId     Int
+  senderId   String
+  receiverId String
+  message    String?
+  createdAt  DateTime @default(now())
+
+  book     Book @relation(fields: [bookId], references: [id])
+  sender   User @relation("RecommendationSender", fields: [senderId], references: [id])
+  receiver User @relation("RecommendationReceiver", fields: [receiverId], references: [id])
 }
 
 enum BookStatus {
@@ -37,22 +55,64 @@ enum BookStatus {
 }
 
 model Book {
-  id                Int        @id @default(autoincrement())
-  userId            String // Foreign key to User
+  id                Int            @id @default(autoincrement())
+  userId            String
   title             String
-  category          String?
   description       String?
+  categories        BookCategory[] @relation("BooksOnCategories")
   author            String
   pages             Int?
   language          String?
   isbn              String?
   publication_date  DateTime?
   publication_place String?
-  status            BookStatus // e.g., "reading", "finished"
-  coverImage        String? // New field for book cover image URL
-  pdf               String?
+  status            BookStatus     @default(unread)
+  coverImage        String?
   publisher         String?
-  user              User       @relation(fields: [userId], references: [id])
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  ebookFile         String? // Path to uploaded PDF file
+  ebookLink         String? // External link to ebook
+  user              User           @relation(fields: [userId], references: [id])
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  progress       ReadingProgress? @relation(name: "BookToReadingProgress")
+  Recommendation Recommendation[]
+}
+
+model ReadingProgress {
+  id          String   @id @default(uuid())
+  bookId      Int      @unique
+  userId      String
+  currentPage Int      @default(0)
+  notes       String?
+  lastUpdated DateTime @updatedAt
+  sessionDate DateTime @default(now())
+
+  book Book @relation(name: "BookToReadingProgress", fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BookCategory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  books     Book[]   @relation("BooksOnCategories")
+  bookId    Int?
+}
+
+enum FriendshipStatus {
+  pending
+  accepted
+  rejected
+}
+
+model Friendship {
+  id         String           @id @default(uuid())
+  senderId   String
+  receiverId String
+  status     FriendshipStatus @default(pending)
+  createdAt  DateTime         @default(now())
+
+  sender   User @relation("FriendshipSender", fields: [senderId], references: [id])
+  receiver User @relation("FriendshipReceiver", fields: [receiverId], references: [id])
 }

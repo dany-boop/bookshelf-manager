@@ -20,7 +20,7 @@ const DashboardContainer: FC = (props: Props) => {
     useSelector((state: RootState) => state.books);
   const userId = useSelector((state: RootState) => state.auth.user?.id);
 
-  useEffect(() => {
+  const refetchBooks = () => {
     if (userId) {
       dispatch(
         fetchBooksData({
@@ -28,9 +28,12 @@ const DashboardContainer: FC = (props: Props) => {
           limit: pagination.limit,
           userId,
         })
-      ); // Pass userId along with page
-    } else {
+      );
     }
+  };
+
+  useEffect(() => {
+    refetchBooks();
   }, [dispatch, pagination.limit, pagination.currentPage, userId]);
 
   const openForm = (book?: Book | null | undefined) => {
@@ -132,7 +135,14 @@ const DashboardContainer: FC = (props: Props) => {
 
           {isFormOpen && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-              <AddBookForm book={selectedBook} onClose={closeForm} />
+              <AddBookForm
+                book={selectedBook}
+                onClose={closeForm}
+                onSuccess={() => {
+                  closeForm();
+                  refetchBooks();
+                }}
+              />
             </div>
           )}
         </div>

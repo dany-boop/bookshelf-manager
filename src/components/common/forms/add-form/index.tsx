@@ -7,7 +7,8 @@ import {
   resetEditBookState,
 } from '@/redux/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/redux/store';
-import { Book, BookStatus } from '@prisma/client';
+import { BookStatus } from '@prisma/client';
+import { Book as PrismaBook } from '@prisma/client';
 import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -19,18 +20,35 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  MultiSelectCombobox,
-  SingleSelectCombobox,
-} from '@/components/ui/MultiSelect';
-import { categories, languages } from '@/lib/data';
+import { SingleSelectCombobox } from '@/components/ui/MultiSelect';
+import { categories as defaultCategories, languages } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
 import { X } from 'lucide-react';
+import {
+  fetchCategories,
+  selectCategories,
+} from '@/redux/reducers/categorySlice';
+import { CustomMultiSelect } from '@/components/ui/customMultiSlect';
+
+type BookProgress = {
+  currentPage: number;
+  userId: string;
+  notes: string | null;
+};
+
+type ExtendedBook = PrismaBook & {
+  readingProgress?: number;
+  progress?: BookProgress;
+  currentPage?: number;
+  notes?: string | null;
+  categories?: { id: string; name: string }[];
+};
 
 interface BookFormProps {
-  book?: Book | null;
+  book?: ExtendedBook | null;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const isValidISBN = (isbn: string) => {
@@ -44,7 +62,7 @@ const isValidISBN = (isbn: string) => {
 const bookSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   author: z.string().min(1, 'Author is required'),
-  category: z.array(z.string()).min(1, 'Category is required'),
+  categories: z.array(z.string()).min(1, 'categories is required'),
   status: z.nativeEnum(BookStatus, {
     errorMap: () => ({ message: 'Status is required' }),
   }),
@@ -69,13 +87,23 @@ const bookSchema = z.object({
       message: 'Pages must be a valid number.',
     }),
 
+  currentPage: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+$/.test(val), {
+      message: 'Current Page must be a valid number.',
+    }),
+
   language: z.string().optional(),
 
   coverImage: z
-    .instanceof(FileList)
+    .any()
+    .optional()
     .refine(
       (files) =>
-        !files || files.length === 0 || files[0].size <= 5 * 1024 * 1024,
+        !files ||
+        (files instanceof FileList && files.length === 0) ||
+        (files instanceof FileList && files[0].size <= 5 * 1024 * 1024),
       {
         message: 'Cover image must be smaller than 5MB.',
       }
@@ -83,27 +111,33 @@ const bookSchema = z.object({
     .refine(
       (files) =>
         !files ||
-        files.length === 0 ||
-        ['image/jpeg', 'image/png', 'image/webp'].includes(files[0].type),
+        (files instanceof FileList && files.length === 0) ||
+        (files instanceof FileList &&
+          ['image/jpeg', 'image/png', 'image/webp'].includes(files[0].type)),
       {
         message: 'Cover image must be in JPG, PNG, or WEBP format.',
       }
     ),
 });
 
-const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
+const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { addBookState, editBookState } = useSelector(
     (state: RootState) => state.books
   );
   const user = useSelector((state: RootState) => state.auth.user);
+  const categoryOptions = useSelector(selectCategories) || [];
+  const [newCategory, setNewCategory] = useState('');
+  const [previewImage, setPreviewImage] = useState<string | null>(
+    book?.coverImage ? book.coverImage : null
+  );
 
   const form = useForm<z.infer<typeof bookSchema>>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
       title: book?.title || '',
       author: book?.author || '',
-      category: book?.category ? book.category.split(',') : [],
+      categories: book?.categories?.map((c) => c.name) || [],
       status: book?.status || BookStatus.unread,
       description: book?.description || '',
       publisher: book?.publisher || '',
@@ -111,37 +145,54 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
       isbn: book?.isbn || '',
       pages: book?.pages?.toString(),
       language: book?.language || '',
+      currentPage: book?.progress?.currentPage?.toString() || '',
       coverImage: undefined,
     },
   });
 
+  const handleImageChange = (files: FileList | null) => {
+    if (files && files.length > 0) {
+      const file = files[0];
+      const url = URL.createObjectURL(file);
+      setPreviewImage(url);
+    }
+  };
+
   const onSubmit = (values: z.infer<typeof bookSchema>) => {
-    const formBody = new FormData();
+    const formData = new FormData();
+
     Object.entries(values).forEach(([key, value]) => {
       if (
         key === 'coverImage' &&
         value instanceof FileList &&
         value.length > 0
       ) {
-        formBody.append(key, value[0]); // Append actual file
+        formData.append(key, value[0]);
       } else if (value) {
-        formBody.append(key, value as string);
+        formData.append(key, value as string);
       }
     });
 
-    if (user) formBody.append('userId', user.id);
+    if (user) formData.append('userId', user.id);
 
-    if (book) {
-      dispatch(editBook({ id: book.id, formData: formBody })).then(() =>
-        dispatch(resetEditBookState())
-      );
-    } else {
-      dispatch(addBook(formBody)).then(() => dispatch(resetAddBookState()));
-    }
-    onClose();
+    const action = book
+      ? dispatch(editBook({ id: book.id, formData }))
+      : dispatch(addBook(formData));
+
+    action
+      .then(() => {
+        onClose();
+        onSuccess?.();
+      })
+      .finally(() => {
+        dispatch(resetAddBookState());
+        dispatch(resetEditBookState());
+      });
   };
 
   useEffect(() => {
+    dispatch(fetchCategories() as any);
+
     return () => {
       dispatch(resetAddBookState());
       dispatch(resetEditBookState());
@@ -169,80 +220,15 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
                 {addBookState.error || editBookState.error}
               </div>
             )}
-            <div className="space-y-3">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <NormalInput {...field} placeholder="Title" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="category"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <MultiSelectCombobox
-                        options={categories}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select Categories"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <textarea
-                        {...field}
-                        placeholder="Description"
-                        className="w-full p-2 border rounded-md focus:border-green-500 focus:outline-none"
-                        rows={2}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="language"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <SingleSelectCombobox
-                        options={languages}
-                        value={field.value as string}
-                        onChange={field.onChange}
-                        placeholder="Select a Language"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-5">
+            <div className=" max-h-96 overflow-y-scroll">
+              <div className="space-y-3 px-3">
                 <FormField
                   control={form.control}
-                  name="author"
+                  name="title"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <NormalInput {...field} placeholder="Author" />
+                        <NormalInput {...field} placeholder="Title" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -251,38 +237,15 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
 
                 <FormField
                   control={form.control}
-                  name="pages"
+                  name="categories"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <NormalInput {...field} placeholder="Pages" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="isbn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <NormalInput {...field} placeholder="ISBN" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-5">
-                <FormField
-                  control={form.control}
-                  name="publisher"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <NormalInput {...field} placeholder="Publisher" />
+                        <CustomMultiSelect
+                          value={field.value} // the currently selected categories
+                          onChange={field.onChange} // function to update form state
+                          placeholder="Select or Add Categories" // placeholder text
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -291,58 +254,190 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose }) => {
 
                 <FormField
                   control={form.control}
-                  name="publication_place"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <NormalInput
+                        <textarea
                           {...field}
-                          placeholder="Publication Place"
+                          placeholder="Description"
+                          className="w-full p-2 border rounded-md focus:border-green-500 focus:outline-none"
+                          rows={2}
                         />
                       </FormControl>
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  name="language"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <SingleSelectCombobox
+                          options={languages}
+                          value={field.value as string}
+                          onChange={field.onChange}
+                          placeholder="Select a Language"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className=" gap-5">
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <NormalInput {...field} placeholder="Author" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-5">
+                  <FormField
+                    control={form.control}
+                    name="currentPage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <NormalInput {...field} placeholder="Current Page" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pages"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <NormalInput {...field} placeholder="Pages" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="isbn"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <NormalInput {...field} placeholder="ISBN" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-5">
+                  <FormField
+                    control={form.control}
+                    name="publisher"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <NormalInput {...field} placeholder="Publisher" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="publication_place"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <NormalInput
+                            {...field}
+                            placeholder="Publication Place"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="w-full p-2 border rounded-md focus:border-green-500"
+                        >
+                          <option value="">Select Status</option>
+                          <option value="reading">Reading</option>
+                          <option value="finished">Finished</option>
+                          <option value="unread">To Read</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="coverImage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            const files = e.dataTransfer.files;
+                            field.onChange(files);
+                            handleImageChange(files);
+                          }}
+                          onDragOver={(e) => e.preventDefault()}
+                          className="w-full border-dashed border-2 border-gray-300 rounded-md p-4 text-center cursor-pointer"
+                        >
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              field.onChange(e.target.files);
+                              handleImageChange(e.target.files);
+                            }}
+                            className="hidden"
+                            id="coverImageInput"
+                          />
+                          <label
+                            htmlFor="coverImageInput"
+                            className="block cursor-pointer"
+                          >
+                            Drag & Drop or Click to Upload
+                          </label>
+                          {previewImage && (
+                            <img
+                              src={previewImage}
+                              alt="Preview"
+                              className="mt-2 h-40 object-contain mx-auto"
+                            />
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <select
-                        {...field}
-                        className="w-full p-2 border rounded-md focus:border-green-500"
-                      >
-                        <option value="">Select Status</option>
-                        <option value="reading">Reading</option>
-                        <option value="finished">Finished</option>
-                        <option value="unread">To Read</option>
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="coverImage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <NormalInput
-                        type="file"
-                        accept="image/jpeg, image/png, image/webp"
-                        onChange={(e) => field.onChange(e.target.files)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
+
             <div className="flex items-center  mt-5">
               <Button
                 type="submit"

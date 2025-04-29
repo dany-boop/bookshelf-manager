@@ -1,10 +1,10 @@
+import React from 'react';
 import ClientLoader from '@/app/use-loading-screen';
 import LoginForm from '@/components/common/forms/login-form';
 import OptimizedImage from '@/components/common/image-loading';
 import { ModeToggle } from '@/components/common/theme-toggler';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
 
 const Login = () => {
   return (

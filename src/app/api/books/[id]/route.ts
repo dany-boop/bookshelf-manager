@@ -12,20 +12,12 @@ const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads');
 const ONE_MB = 1024 * 1024; // 1MB in bytes
 
 // ------------- IMAGE HANDLING HELPERS ------------- //
-
-/**
- * Saves an image file either by uploading to Supabase or saving locally.
- * @param file - The File object.
- * @returns The public URL to the saved image or null on failure.
- */
 async function saveImage(file: File): Promise<string | null> {
   const isSupabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
   return isSupabaseConfigured ? uploadToSupabase(file) : saveLocally(file);
 }
 
-/**
- * Uploads an image file to Supabase Storage.
- */
+//  Uploads an image file to Supabase Storage.
 async function uploadToSupabase(file: File): Promise<string | null> {
   try {
     const fileExt = path.extname(file.name);
@@ -115,11 +107,7 @@ async function deleteImageFromSupabase(filePath: string): Promise<void> {
 }
 
 // ------------- API HANDLERS ------------- //
-
-/**
- * PUT /api/books/:id
- * Updates an existing book record.
- */
+//  PUT /api/books/:id
 export async function PUT(req: NextRequest): Promise<NextResponse> {
   try {
     const { pathname } = new URL(req.url);
@@ -129,10 +117,9 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     }
 
     const formData = await req.formData();
-    // Destructure update fields from the formData.
     const {
       title,
-      category,
+      categories: categoriesInput, // Expecting comma-separated string
       description,
       author,
       pages,
@@ -141,37 +128,49 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
       publication_place,
       language,
       status,
+      currentPage,
       coverImage: newCoverImageFile,
     } = Object.fromEntries(formData);
 
-    // Retrieve existing book record.
+    // Process categories - split comma-separated string and trim whitespace
+    const categoryNames =
+      typeof categoriesInput === 'string'
+        ? categoriesInput
+            .split(',')
+            .map((name) => name.trim())
+            .filter((name) => name.length > 0)
+        : [];
+
     const existingBook = await prisma.book.findUnique({
       where: { id: Number(id) },
+      include: {
+        progress: true,
+        categories: true,
+      },
     });
+
     if (!existingBook) {
       return NextResponse.json({ message: 'Book not found' }, { status: 404 });
     }
 
-    // Prepare update data.
     const updateData: any = {
       title,
-      category,
       description,
       author,
       isbn,
       publisher,
       publication_place,
-      pages: parseInt(pages as string, 10),
+      pages: pages ? parseInt(pages as string, 10) : null,
       language,
       status,
     };
 
-    // Handle cover image update.
+    // Handle cover image update
     if (newCoverImageFile instanceof File) {
       const newCoverImage = await saveImage(newCoverImageFile);
       updateData.coverImage = newCoverImage;
 
-      // Delete old image if it exists.
+      // Delete old image if it exists
       if (existingBook.coverImage) {
         if (existingBook.coverImage.startsWith('/uploads')) {
           const oldImagePath = path.join(
@@ -189,10 +188,67 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
       }
     }
 
+    if (categoryNames.length > 0) {
+      const categoryOperations = await Promise.all(
+        categoryNames.map(async (name) => {
+          return {
+            where: { name },
+            create: { name },
+          };
+        })
+      );
+
+      // First disconnect all existing categories
+      await prisma.book.update({
+        where: { id: Number(id) },
+        data: {
+          categories: {
+            set: [], // Disconnect all
+          },
+        },
+      });
+
+      updateData.categories = {
+        connectOrCreate: categoryOperations,
+      };
+    } else {
+      // If no categories provided, disconnect all
+      updateData.categories = {
+        set: [],
+      };
+    }
+
+    // Update the book
     const updatedBook = await prisma.book.update({
       where: { id: Number(id) },
       data: updateData,
+      include: {
+        categories: true,
+      },
     });
+
+    if (typeof currentPage === 'string' && currentPage.trim() !== '') {
+      const currentPageInt = parseInt(currentPage, 10);
+      if (!isNaN(currentPageInt)) {
+        if (existingBook.progress) {
+          await prisma.readingProgress.update({
+            where: { bookId: Number(id) },
+            data: {
+              currentPage: currentPageInt,
+              lastUpdated: new Date(),
+            },
+          });
+        } else {
+          await prisma.readingProgress.create({
+            data: {
+              bookId: Number(id),
+              userId: existingBook.userId,
+              currentPage: currentPageInt,
+            },
+          });
+        }
+      }
+    }
 
     return NextResponse.json(updatedBook, { status: 200 });
   } catch (error) {
@@ -204,10 +260,8 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-/**
- * DELETE /api/books/:id
- * Deletes an existing book record and its cover image.
- */
+// DELETE /api/books/:id
+
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
   try {
     const { pathname } = new URL(req.url);
@@ -217,20 +271,38 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Invalid book ID' }, { status: 400 });
     }
 
-    // Retrieve the existing book.
+    const bookId = Number(id);
+
     const existingBook = await prisma.book.findUnique({
-      where: { id: Number(id) },
+      where: { id: bookId },
+      include: { progress: true, categories: true },
     });
+
     if (!existingBook) {
       return NextResponse.json({ message: 'Book not found' }, { status: 404 });
     }
 
-    // Delete the book record.
-    await prisma.book.delete({
-      where: { id: Number(id) },
+    if (existingBook.progress) {
+      await prisma.readingProgress.delete({
+        where: { bookId },
+      });
+    }
+
+    await prisma.book.update({
+      where: { id: bookId },
+      data: {
+        categories: {
+          set: [],
+        },
+      },
     });
 
-    // Delete the cover image if it exists.
+    // Delete the book
+    await prisma.book.delete({
+      where: { id: bookId },
+    });
+
+    // Delete the cover image if it exists
     if (existingBook.coverImage) {
       if (existingBook.coverImage.startsWith('/uploads')) {
         const localPath = path.join(
@@ -257,10 +329,6 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-/**
- * OPTIONS /api/books
- * Returns allowed HTTP methods.
- */
 export function OPTIONS() {
   return NextResponse.json({ methods: ['GET', 'PUT', 'DELETE'] });
 }

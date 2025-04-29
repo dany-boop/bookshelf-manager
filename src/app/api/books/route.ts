@@ -21,7 +21,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const limit = parseInt(searchParams.get('limit') || '15', 10);
 
   // Extract filtering parameters.
-  const category = searchParams.get('category');
+  const categories = searchParams.get('categories');
   const status = searchParams.get('status');
   const isbn = searchParams.get('isbn');
   const publication_place = searchParams.get('publication_place');
@@ -38,10 +38,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   // Build the Prisma "where" filter.
   const where: any = { userId };
 
-  if (category) {
-    where.OR = category.split(',').map((cat) => ({
-      category: { has: cat.trim() },
-    }));
+  if (categories) {
+    where.categories = {
+      some: {
+        name: {
+          in: categories.split(',').map((name) => name.trim()),
+        },
+      },
+    };
   }
 
   // Additional filters.
@@ -71,6 +75,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { title: 'desc' },
+      include: {
+        progress: {
+          select: { currentPage: true, userId: true, notes: true },
+        },
+        categories: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     const totalBooks = await prisma.book.count({ where });
@@ -81,8 +96,20 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       where: { status: 'reading', userId },
     });
 
+    const booksWithProgress = books.map((book) => {
+      const totalPages = book.pages ?? 0; // Default to 0 if null
+      const currentPage = book.progress?.currentPage ?? 0; // Default to 0 if null
+      const progress = totalPages > 0 ? (currentPage / totalPages) * 100 : 0;
+
+      return {
+        ...book,
+        readingProgress: Math.min(progress, 100),
+        categories: book.categories || [],
+      };
+    });
+
     return NextResponse.json({
-      books: books ?? [],
+      books: booksWithProgress ?? [],
       totalBooks,
       readBooks,
       finishedBooks,
@@ -132,7 +159,7 @@ async function uploadToSupabase(file: File): Promise<string | null> {
         .toBuffer();
     }
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
       .upload(filePath, optimizedBuffer, {
         contentType: file.type,
@@ -185,14 +212,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Extract fields from formData
     const userId = formData.get('userId')?.toString();
     const title = formData.get('title')?.toString();
-    const category = formData.get('category')?.toString();
+    const categoryNames =
+      formData.get('categories')?.toString().split(',') || [];
     const isbn = formData.get('isbn')?.toString();
     const publisher = formData.get('publisher')?.toString();
     const publication_place = formData.get('publication_place')?.toString();
     const description = formData.get('description')?.toString();
     const author = formData.get('author')?.toString();
-    const pages = parseInt(formData.get('pages')?.toString() || '0', 15);
+    const pages = parseInt(formData.get('pages')?.toString() || '0', 10);
     const language = formData.get('language')?.toString();
+    const currentPage = parseInt(
+      formData.get('currentPage')?.toString() || '0',
+      10
+    );
     const status = formData.get('status') as BookStatus;
     const coverImageFile = formData.get('coverImage') as File | null;
 
@@ -203,22 +235,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { status: 400 }
       );
     }
-    if (!userId && !coverImageFile) {
-      return NextResponse.json(
-        { error: 'Missing user and image fields' },
-        { status: 400 }
-      );
-    }
 
     if (!userId) {
       return NextResponse.json(
         { error: 'Missing user id fields' },
-        { status: 400 }
-      );
-    }
-    if (!coverImageFile) {
-      return NextResponse.json(
-        { error: 'Missing coverImage fields' },
         { status: 400 }
       );
     }
@@ -228,7 +248,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (!title) missingFields.push('title');
     if (!author) missingFields.push('author');
     if (!status) missingFields.push('status');
-    if (!coverImageFile) missingFields.push('coverImage');
 
     if (missingFields.length > 0) {
       return NextResponse.json(
@@ -238,17 +257,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     // Handle image processing
-    const coverImageUrl = await saveImage(coverImageFile);
-
-    if (!coverImageUrl) {
-      return NextResponse.json(
-        { error: 'Image upload failed' },
-        { status: 500 }
-      );
+    let coverImageUrl: string | null = null;
+    if (coverImageFile) {
+      coverImageUrl = await saveImage(coverImageFile);
+      if (!coverImageUrl) {
+        return NextResponse.json(
+          { error: 'Image upload failed' },
+          { status: 500 }
+        );
+      }
     }
 
-    // Save image file and get public URL
-    // const coverImage = await saveImage(coverImageFile);
+    // Process categories - trim whitespace and filter empty strings
+    const processedCategories = categoryNames
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0);
 
     // Create the book record in the database
     try {
@@ -256,7 +279,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         data: {
           userId,
           title,
-          category,
           description,
           author,
           pages,
@@ -266,10 +288,37 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           publication_place,
           status,
           coverImage: coverImageUrl,
+          categories: {
+            connect: processedCategories.map((name) => ({ name })),
+          },
+
+          progress: {
+            create: {
+              userId,
+              currentPage,
+            },
+          },
+        },
+        include: {
+          progress: true,
+          categories: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       });
 
-      return NextResponse.json(newBook, { status: 201 });
+      const progressPercentage = pages > 0 ? (currentPage / pages) * 100 : 0;
+
+      return NextResponse.json(
+        {
+          ...newBook,
+          readingProgress: Math.min(Number(progressPercentage.toFixed(2)), 100),
+        },
+        { status: 201 }
+      );
     } catch (dbError) {
       console.error('Database insertion failed:', dbError);
       return NextResponse.json(
