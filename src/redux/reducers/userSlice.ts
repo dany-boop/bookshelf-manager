@@ -39,7 +39,6 @@ export const fetchUser = createAsyncThunk(
   async (id?: string) => {
     const response = await fetch(`/api/user/${id}`);
     if (!response.ok) {
-      toast.error('Failed to delete user');
       throw new Error('Failed to fetch user data');
     }
     return response.json();

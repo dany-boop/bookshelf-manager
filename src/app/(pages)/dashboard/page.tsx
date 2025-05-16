@@ -5,15 +5,15 @@ import React from 'react';
 
 const Dashboard = () => {
   return (
-    <ClientLoader>
-      <main>
-        <MainLayout>
-          <div className="pt-24 w-full">
-            <DashboardContainer />
-          </div>
-        </MainLayout>
-      </main>
-    </ClientLoader>
+    // <ClientLoader>
+    <main>
+      <MainLayout>
+        <div className="pt-24 w-full">
+          <DashboardContainer />
+        </div>
+      </MainLayout>
+    </main>
+    // </ClientLoader>
   );
 };
 

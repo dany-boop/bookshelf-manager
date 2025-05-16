@@ -5,6 +5,7 @@ import userReducer from './reducers/userSlice';
 import categoryReducer from './reducers/categorySlice';
 import storageSession from 'redux-persist/lib/storage/session';
 import { persistReducer, persistStore } from 'redux-persist';
+import friendSlice from './reducers/friendSlice';
 
 const authPersistConfig = {
   key: 'auth',
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   books: booksReducer, // Normal reducer
   user: userReducer,
   categories: categoryReducer,
+  friends: friendSlice,
 });
 
 const store = configureStore({

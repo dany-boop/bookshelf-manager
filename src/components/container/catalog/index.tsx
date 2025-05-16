@@ -26,7 +26,9 @@ const CatalogContainer = () => {
     (state: RootState) => state.books
   );
   const userId = useSelector((state: RootState) => state.auth.user?.id);
-  const categories = useSelector(selectCategories);
+  const categories =
+    (useSelector(selectCategories) as { name: string }[]) ?? [];
+
   const { filters } = useSelector((state: RootState) => state.books);
 
   useEffect(() => {
@@ -91,7 +93,7 @@ const CatalogContainer = () => {
         />
         <div className="flex gap-8 my-3 md:my-0">
           <MultiSelectCombobox
-            options={categories.map((cat) => cat.name)}
+            options={categories?.map((c) => c.name) ?? []}
             value={filters.category}
             onChange={(selected) =>
               dispatch(setFilters({ category: selected }))

@@ -222,67 +222,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-// delete user
-// export async function DELETE(req: NextRequest): Promise<NextResponse> {
-//   try {
-//     const { pathname } = new URL(req.url);
-//     const id = pathname.split('/').pop();
-//     if (!id) {
-//       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
-//     }
 
-//     // Find the existing user.
-//     const existingUser = await prisma.user.findUnique({
-//       where: { id },
-//     });
-//     if (!existingUser) {
-//       return NextResponse.json({ error: 'User not found' }, { status: 404 });
-//     }
-
-//     // Delete the user record.
-//     await prisma.user.delete({ where: { id } });
-
-//     // If a photo exists, delete the photo file.
-//     if (existingUser.photo_url) {
-//       if (existingUser.photo_url.startsWith('/uploads')) {
-//         // If image is local
-//         const oldImagePath = path.join(
-//           process.cwd(),
-//           'public',
-//           existingUser.photo_url
-//         );
-//         await deleteImage(oldImagePath);
-//       } else {
-//         // If image is in Supabase
-//         const imagePath = existingUser.photo_url.split('/').pop(); // Extract the image name from the URL
-//         if (imagePath) {
-//           await deleteImageFromSupabase(`book/${imagePath}`);
-//         } // Return a 204 No Content status.
-//       }
-//       const photoPath = path.join(
-//         process.cwd(),
-//         'public',
-//         existingUser.photo_url
-//       );
-//       console.log('Attempting to delete photo at:', photoPath);
-//     }
-
-//     // return new NextResponse(null, {
-//     //   message: 'User deleted successfully',
-//     //   status: 204,
-//     // });
-//     return NextResponse.json(
-//       { message: 'User deleted successfully' },
-//       { status: 204 }
-//     );
-//   } catch (error) {
-//     console.error('Error deleting user:', error);
-//     return NextResponse.json(
-//       { error: 'Failed to delete user' },
-//       { status: 500 }
-//     );
-//   }
-// }
 export function OPTIONS(): NextResponse {
   return NextResponse.json({ methods: ['PUT', 'DELETE'] });
 }

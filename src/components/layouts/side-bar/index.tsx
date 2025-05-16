@@ -43,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
 
   return (
     <nav className="w-full overflow-hidden border border-1 ">
-      <div className="flex justify-between items-center bg-gray-100 dark:bg-gray-900 p-4 ps-2 pb-3  transition-all duration-500  top-0  z-50">
+      <div className="flex justify-between items-center bg-gray-100 dark:bg-gray-900 p-4 ps-2 pb-3 transition-all duration-500 top-0 z-50">
         <div className="flex align-middle">
           <Link href={'/'}>
             <div className={`flex  justify-between gap-5 align-middle `}>

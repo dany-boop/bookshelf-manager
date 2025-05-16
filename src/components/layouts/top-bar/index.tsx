@@ -9,12 +9,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/reducers/authSlice';
 import { RootState } from '@/redux/store';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import FriendList from '@/components/common/friend-list';
 
 type Props = {
-  isScrolled: boolean;
   isSidebarOpen: boolean;
 };
-const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
+const TopBar: FC<Props> = ({ isSidebarOpen }) => {
   const router = useRouter();
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const user = useSelector((state: RootState) => state.auth.user);
@@ -58,13 +58,7 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
             : 'md:w-[calc(100%-4.5rem)] w-[calc(100%--0.5rem)]'
         }`}
       >
-        <div
-          className={`flex px-7 justify-between items-center h-full  transition-all duration-300 ease-in-out ${
-            isScrolled
-              ? 'mx-7 bg-gray-100/80 dark:bg-gray-900/80 shadow-md backdrop-filter backdrop-blur-md rounded-b-lg transform translate-y-0'
-              : 'bg-gray-100 dark:bg-gray-900 shadow-none transform -translate-y-1'
-          }`}
-        >
+        <div className="flex px-7 justify-between items-center h-full border-b border-1 bg-gray-100/80 dark:bg-gray-900/80  backdrop-filter backdrop-blur-md">
           <div className="text-xl"></div>
           <div className="flex gap-10 align-middle">
             <button>
@@ -91,6 +85,9 @@ const TopBar: FC<Props> = ({ isScrolled, isSidebarOpen }) => {
                   <Icon icon="solar:user-circle-outline" width={25} />
                 )}
               </Avatar>
+            </div>
+            <div className="my-auto">
+              <FriendList userId={user?.id} />
             </div>
             <button
               className=" bg-red-100 hover:bg-red-200 text-red-600 rounded-lg my-auto"

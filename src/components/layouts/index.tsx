@@ -3,17 +3,13 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import { ScrollArea } from '../ui/scroll-area';
 import TopBar from './top-bar';
 import Sidebar from './side-bar';
-// import Sidebar from './SideBar';
-// import TopBar from './TopBar';
 
 type Props = {
   children: React.ReactNode;
 };
 
 const MainLayout: FC<Props> = ({ children }) => {
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const [isScrolled, setIsScrolled] = useState(false);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
@@ -33,41 +29,9 @@ const MainLayout: FC<Props> = ({ children }) => {
     window.dispatchEvent(new Event('sidebarToggle'));
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollableViewport = mainContentRef.current?.querySelector(
-        '[data-radix-scroll-area-viewport]'
-      );
+ 
 
-      if (scrollableViewport) {
-        const currentScrollTop = (scrollableViewport as HTMLElement).scrollTop;
-
-        if (currentScrollTop > 0) {
-          setIsScrolled(true);
-        } else {
-          setIsScrolled(false);
-        }
-      }
-    };
-
-    const scrollableViewport = mainContentRef.current?.querySelector(
-      '[data-radix-scroll-area-viewport]'
-    );
-
-    if (scrollableViewport) {
-      scrollableViewport.addEventListener('scroll', handleScroll);
-    }
-
-    return () => {
-      if (scrollableViewport) {
-        scrollableViewport.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, []);
-
-  // const handleToggleSidebar = () => {
-  //   setIsSidebarOpen((prevIsOpen) => !prevIsOpen);
-  // };
+  
 
   return (
     <>
@@ -89,7 +53,7 @@ const MainLayout: FC<Props> = ({ children }) => {
         >
           {/* Top Bar */}
           <div className=" top-0 z-30 ">
-            <TopBar isScrolled={isScrolled} isSidebarOpen={isSidebarOpen} />
+            <TopBar isSidebarOpen={isSidebarOpen} />
           </div>
 
           {/* Main Content */}

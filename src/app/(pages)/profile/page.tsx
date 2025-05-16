@@ -6,15 +6,15 @@ import React from 'react';
 
 const Profile = () => {
   return (
-    <ClientLoader>
-      <main>
-        <MainLayout>
-          <div className="pt-24 w-full">
-            <ContainerProfile />
-          </div>
-        </MainLayout>
-      </main>
-    </ClientLoader>
+    // <ClientLoader>
+    <main>
+      <MainLayout>
+        <div className="pt-24 w-full">
+          <ContainerProfile />
+        </div>
+      </MainLayout>
+    </main>
+    // </ClientLoader>
   );
 };
 
