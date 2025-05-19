@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchBooksData } from '@/redux/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { cn } from '@/lib/utils';
+import { Icon } from '@iconify/react';
 
 interface SearchBooksProps {
   userId: string | undefined;
@@ -35,14 +36,19 @@ const SearchBooks: React.FC<SearchBooksProps> = ({
   }, [query, page, userId, dispatch]);
 
   return (
-    <div>
+    <div className="relative my-auto w-40 md:w-60">
+      <Icon
+        icon="ic:round-search"
+        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+        width={20}
+      />
       <input
         type="text"
         value={query}
         onChange={handleSearchChange}
-        placeholder="Search books by title or Author"
+        placeholder="Search by title or author"
         className={cn(
-          'bg-gray-100 dark:bg-gray-900 border p-2 rounded-xl focus:outline-0 w-40 md:w-60 focus:border-green-500',
+          'bg-gray-100 dark:bg-gray-900 border p-2 pl-9 rounded-xl focus:outline-0 w-full focus:border-green-500',
           className
         )}
       />

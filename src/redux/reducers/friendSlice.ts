@@ -23,6 +23,9 @@ interface FriendsState {
   pending: Friendship[];
   friends: User[];
   searchResults: User[];
+  reqIds: string[];
+  resIds: string[];
+  recReqIds: string[];
   loading: boolean;
   error: string | null;
 }
@@ -31,6 +34,9 @@ const initialState: FriendsState = {
   pending: [],
   friends: [],
   searchResults: [],
+  reqIds: [],
+  resIds: [],
+  recReqIds: [],
   loading: false,
   error: null,
 };
@@ -75,7 +81,7 @@ export const respondToRequest = createAsyncThunk(
         requestId,
         action,
       });
-      return res.data;
+      return res.data as { message: string; newFriend: User };
     } catch (err: any) {
       return rejectWithValue(
         err.response?.data?.error || 'Failed to respond to request'
@@ -149,28 +155,35 @@ const friendsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // sendFriendRequest
-      .addCase(sendFriendRequest.pending, (state) => {
-        state.loading = true;
+      .addCase(sendFriendRequest.pending, (state, action) => {
+        const id = action.meta.arg.receiverId;
+        state.reqIds.push(id);
         state.error = null;
       })
-      .addCase(sendFriendRequest.fulfilled, (state) => {
-        state.loading = false;
+      .addCase(sendFriendRequest.fulfilled, (state, action) => {
+        const id = action.meta.arg.receiverId;
+        state.reqIds = state.reqIds.filter((i) => i !== id);
+        state.recReqIds.push(id);
+        // console.log('madame');
+
         toast.success(`Add success`);
       })
       .addCase(sendFriendRequest.rejected, (state, action) => {
-        state.loading = false;
+        const id = action.meta.arg.receiverId;
+        // state.reqIds = state.reqIds.filter((i) => i !== id);
+        state.recReqIds.push(id);
         state.error = action.payload as string;
       })
 
       //  respondToRequest
-      .addCase(respondToRequest.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(respondToRequest.pending, (state, action) => {
+        const id = action.meta.arg.requestId;
+        state.recReqIds.push(id);
       })
       .addCase(respondToRequest.fulfilled, (state, action) => {
         const { requestId, action: responseAction } = action.meta.arg;
-        const newFriend = action.payload;
-        state.loading = false;
+        const id = action.meta.arg.requestId;
+        const newFriend = action.payload.newFriend;
 
         // Remove from pending
         state.pending = state.pending.filter((req) => req.id !== requestId);
@@ -183,7 +196,8 @@ const friendsSlice = createSlice({
       })
 
       .addCase(respondToRequest.rejected, (state, action) => {
-        state.loading = false;
+        const id = action.meta.arg.requestId;
+        state.recReqIds.push(id);
         state.error = action.payload as string;
       })
 

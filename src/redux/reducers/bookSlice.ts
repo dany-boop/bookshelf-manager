@@ -15,6 +15,7 @@ export interface BooksState {
   catalog: Book[];
   loading: boolean;
   error: string | null;
+  sortBy: 'title' | 'progress' | '';
   pagination: {
     currentPage: number;
     totalPages: number;
@@ -37,6 +38,7 @@ const initialState: BooksState = {
   catalog: [],
   loading: false,
   error: null,
+  sortBy: '' as 'title' | 'progress' | '',
   pagination: {
     currentPage: 1,
     totalPages: 1,
@@ -166,6 +168,9 @@ const booksSlice = createSlice({
   name: 'books',
   initialState,
   reducers: {
+    setSortBy: (state, action: PayloadAction<'title' | 'progress' | ''>) => {
+      state.sortBy = action.payload;
+    },
     setLimit: (state, action) => {
       state.pagination.limit = action.payload;
     },
@@ -195,6 +200,15 @@ const booksSlice = createSlice({
     },
     resetDeleteBookState: (state) => {
       state.deleteBookState = { loading: false, success: false, error: null };
+    },
+    resetBooksData: (state) => {
+      state.catalog = [];
+      state.totalBooks = 0;
+      state.finishedBooks = 0;
+      state.readBooks = 0;
+      state.pagination.totalPages = 1;
+      state.loading = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -283,8 +297,10 @@ const booksSlice = createSlice({
 
 export const {
   setFilters,
+  setSortBy,
   setLimit,
   setCurrentPage,
+  resetBooksData,
   resetAddBookState,
   resetEditBookState,
 } = booksSlice.actions;

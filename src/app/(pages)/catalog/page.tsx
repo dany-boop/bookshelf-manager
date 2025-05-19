@@ -1,4 +1,3 @@
-import LoadingScreen from '@/components/common/page-loading';
 import CatalogContainer from '@/components/container/catalog';
 import MainLayout from '@/components/layouts';
 import React from 'react';

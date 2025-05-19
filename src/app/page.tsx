@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 const LandingPage = () => {
   return (
-    <main className="min-h-screen flex flex-col justify-center items-center ">
+    <main className="min-h-full flex flex-col justify-center items-center ">
       <Image
         src="/assets/login-background.jpg"
         alt="background"

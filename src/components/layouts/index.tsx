@@ -9,12 +9,11 @@ type Props = {
 };
 
 const MainLayout: FC<Props> = ({ children }) => {
-
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
-  // Access localStorage in useEffect to avoid ReferenceError
   useEffect(() => {
     const storedValue = localStorage.getItem('isSidebarOpen');
     if (storedValue !== null) {
@@ -22,27 +21,44 @@ const MainLayout: FC<Props> = ({ children }) => {
     }
   }, []);
 
-  const handleSidebarToggle = () => {
-    const newIsOpen = !isSidebarOpen;
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const isMobile = window.innerWidth < 768;
+      if (
+        isMobile &&
+        isSidebarOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        toggleSidebar(false); // close sidebar
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isSidebarOpen]);
+
+  const toggleSidebar = (forceState?: boolean) => {
+    const newIsOpen = forceState !== undefined ? forceState : !isSidebarOpen;
     setIsSidebarOpen(newIsOpen);
     localStorage.setItem('isSidebarOpen', JSON.stringify(newIsOpen));
     window.dispatchEvent(new Event('sidebarToggle'));
   };
-
- 
-
-  
 
   return (
     <>
       <div className="flex h-screen max-w-screen overflow-hidden">
         {/* Sidebar */}
         <div
+          ref={sidebarRef}
           className={` text-white z-50 overflow-hidden absolute md:relative  h-full ${
             isSidebarOpen ? 'w-72' : ' md:w-[4.5em] w-0 '
           } transition-all duration-300`}
         >
-          <Sidebar onToggleSidebar={handleSidebarToggle} />
+          <Sidebar
+            isOpen={isSidebarOpen}
+            onToggleSidebar={() => toggleSidebar()}
+          />
         </div>
 
         {/* Content Area */}

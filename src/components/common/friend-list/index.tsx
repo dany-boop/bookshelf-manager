@@ -27,15 +27,22 @@ interface Props {
 
 const FriendList = ({ userId }: Props) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { friends, pending, searchResults, loading, error } = useSelector(
-    (state: RootState) => state.friends
-  );
+  const {
+    friends,
+    pending,
+    searchResults,
+    loading,
+    recReqIds,
+    reqIds,
+    resIds,
+    error,
+  } = useSelector((state: RootState) => state.friends);
   const [query, setQuery] = useState('');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [recentlyRequestedIds, setRecentlyRequestedIds] = useState<string[]>(
-    []
-  );
+  // const [recentlyRequestedIds, setRecentlyRequestedIds] = useState<string[]>(
+  //   []
+  // );
 
   useEffect(() => {
     if (userId) {
@@ -58,11 +65,8 @@ const FriendList = ({ userId }: Props) => {
   };
 
   const handleSendRequest = (receiverId: string) => {
-    dispatch(sendFriendRequest({ senderId: userId, receiverId }))
-      .unwrap()
-      .then(() => {
-        setRecentlyRequestedIds((prev) => [...prev, receiverId]);
-      });
+    // setSendingRequestIds((prev) => [...prev, receiverId]);
+    dispatch(sendFriendRequest({ senderId: userId, receiverId }));
   };
 
   const handleRespond = (
@@ -108,7 +112,10 @@ const FriendList = ({ userId }: Props) => {
             {hasSearched && (
               <>
                 <h2 className="font-semibold">Search Results</h2>
-                {searchResults.length > 0 ? (
+
+                {loading ? (
+                  <>loading...</>
+                ) : searchResults.length > 0 ? (
                   <ul className="space-y-2">
                     {searchResults.map((user) => (
                       <li
@@ -131,20 +138,19 @@ const FriendList = ({ userId }: Props) => {
                           </Avatar>
                           <span>{user.username}</span>
                         </div>
+
                         {user.isFriend ? (
                           <span className="text-green-600 font-medium">
                             Friend
                           </span>
-                        ) : user.isRequested ||
-                          recentlyRequestedIds.includes(user.id) ? (
+                        ) : user.isRequested || recReqIds.includes(user.id) ? (
                           <motion.button
-                            key="requested"
                             disabled
+                            key="requested"
+                            className="bg-gray-300 px-3 py-1 rounded-lg cursor-not-allowed"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="bg-gray-300 text-white px-3 py-1 rounded-lg cursor-not-allowed"
                           >
                             <Icon
                               icon="mdi:check-circle-outline"
@@ -155,18 +161,25 @@ const FriendList = ({ userId }: Props) => {
                         ) : (
                           <motion.button
                             key="add"
+                            onClick={() => handleSendRequest(user.id)}
+                            className="bg-green-500/30 text-white px-3 py-1 rounded-lg"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="bg-green-500/30 text-white px-3 py-1 rounded-lg"
-                            onClick={() => handleSendRequest(user.id)}
                           >
-                            <Icon
-                              icon="cuida:user-add-outline"
-                              className="text-green-500"
-                              width={25}
-                            />
+                            {reqIds.includes(user.id) ? (
+                              <Icon
+                                icon="eos-icons:loading"
+                                className="animate-spin"
+                                width={20}
+                              />
+                            ) : (
+                              <Icon
+                                icon="cuida:user-add-outline"
+                                className="text-green-500"
+                                width={25}
+                              />
+                            )}
                           </motion.button>
                         )}
                       </li>
@@ -214,29 +227,63 @@ const FriendList = ({ userId }: Props) => {
                       key={req.id}
                       className="flex justify-between items-center p-2"
                     >
-                      <Avatar className="md:h-8 md:w-8 h-6 w-6">
-                        {req.sender?.photo_url ? (
-                          <AvatarImage
-                            src={req.sender?.photo_url}
-                            alt="User Picture"
-                          />
-                        ) : (
-                          <Icon icon="solar:user-circle-outline" width={35} />
-                        )}
-                      </Avatar>
-                      <span>{req.sender?.username}</span>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="md:h-8 md:w-8 h-6 w-6">
+                          {req.sender?.photo_url ? (
+                            <AvatarImage
+                              src={req.sender?.photo_url}
+                              alt="User Picture"
+                            />
+                          ) : (
+                            <Icon icon="solar:user-circle-outline" width={35} />
+                          )}
+                        </Avatar>
+                        <span>{req.sender?.username}</span>
+                      </div>
                       <div className="flex gap-2">
                         <button
                           className="bg-green-500/20 text-green-500 px-3 font-bold py-1 rounded"
-                          onClick={() => handleRespond(req.id, 'accepted')}
+                          onClick={() =>
+                            dispatch(
+                              respondToRequest({
+                                requestId: req.id,
+                                action: 'accepted',
+                              })
+                            )
+                          }
+                          disabled={resIds.includes(req.id)}
                         >
-                          Accept
+                          {resIds.includes(req.id) ? (
+                            <Icon
+                              icon="eos-icons:loading"
+                              className="animate-spin"
+                              width={20}
+                            />
+                          ) : (
+                            'Accept'
+                          )}
                         </button>
                         <button
                           className="bg-red-500/20 text-red-500 px-3 font-bold py-1 rounded"
-                          onClick={() => handleRespond(req.id, 'rejected')}
+                          onClick={() =>
+                            dispatch(
+                              respondToRequest({
+                                requestId: req.id,
+                                action: 'rejected',
+                              })
+                            )
+                          }
+                          disabled={resIds.includes(req.id)}
                         >
-                          Reject
+                          {resIds.includes(req.id) ? (
+                            <Icon
+                              icon="eos-icons:loading"
+                              className="animate-spin"
+                              width={20}
+                            />
+                          ) : (
+                            'Reject'
+                          )}
                         </button>
                       </div>
                     </li>

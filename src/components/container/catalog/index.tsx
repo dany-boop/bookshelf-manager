@@ -8,9 +8,13 @@ import {
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { languages, status_options } from '@/lib/data';
-import { fetchBooksData, setFilters } from '@/redux/reducers/bookSlice';
+import {
+  fetchBooksData,
+  setFilters,
+  setSortBy,
+} from '@/redux/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/redux/store';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import BookCard from '@/components/common/book-card';
@@ -19,6 +23,12 @@ import {
   fetchCategories,
   selectCategories,
 } from '@/redux/reducers/categorySlice';
+import { Icon } from '@iconify/react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 const CatalogContainer = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,8 +38,8 @@ const CatalogContainer = () => {
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const categories =
     (useSelector(selectCategories) as { name: string }[]) ?? [];
-
-  const { filters } = useSelector((state: RootState) => state.books);
+  const [filter, setFilter] = useState(false);
+  const { filters, sortBy } = useSelector((state: RootState) => state.books);
 
   useEffect(() => {
     dispatch(fetchCategories() as any);
@@ -68,9 +78,18 @@ const CatalogContainer = () => {
       bookCategoryNames?.includes(selected.toLowerCase())
     );
   });
+  const sortedBooks = [...filteredBooks].sort((a: any, b: any) => {
+    if (sortBy === 'title') {
+      return a.title.localeCompare(b.title);
+    }
+    if (sortBy === 'progress') {
+      return (b.currentPage || 0) - (a.currentPage || 0);
+    }
+    return 0;
+  });
 
   const bookItemVariants = {
-    hidden: { opacity: 0, x: -100 }, // Start off-screen to the left
+    hidden: { opacity: 0, x: -100 },
     show: {
       opacity: 1,
       x: 0,
@@ -85,32 +104,6 @@ const CatalogContainer = () => {
 
   return (
     <main>
-      <div className="md:flex gap-3 md:justify-between">
-        <SearchBooks
-          userId={userId}
-          className="w-80 mb-10"
-          limit={pagination.limit}
-        />
-        <div className="flex gap-8 my-3 md:my-0">
-          <MultiSelectCombobox
-            options={categories?.map((c) => c.name) ?? []}
-            value={filters.category}
-            onChange={(selected) =>
-              dispatch(setFilters({ category: selected }))
-            }
-            placeholder="Select Categories"
-          />
-
-          <SingleSelectCombobox
-            options={languages}
-            value={filters.language}
-            onChange={(selected) => {
-              dispatch(setFilters({ language: selected }));
-            }}
-            placeholder="Select a Language"
-          />
-        </div>
-      </div>
       <Tabs
         value={filters.status || 'none'}
         onValueChange={(status) =>
@@ -118,13 +111,123 @@ const CatalogContainer = () => {
         }
         className="mb-5"
       >
-        <TabsList className="flex w-full overflow-x-auto">
-          {status_options.map(({ label, value }) => (
-            <TabsTrigger key={value} value={value}>
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between w-full">
+          <div className="flex  items-center gap-3 w-full md:w-auto">
+            <SearchBooks
+              userId={userId}
+              className="flex-1 min-w-[150px] sm:min-w-[200px] sm:w-60"
+              limit={pagination.limit}
+            />
+
+            <div className="flex gap-3 md:hidden">
+              <button
+                className="items-center flex py-2 px-4 border rounded-xl gap-2"
+                onClick={() => setFilter((prev) => !prev)}
+              >
+                <Icon icon="solar:filter-bold-duotone" />
+                <span>Filters</span>
+              </button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="items-center flex py-2 px-4 border rounded-xl gap-2">
+                    <Icon icon="mynaui:filter-solid" />
+                    <span>Sort</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-40 bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
+                  <div className="flex flex-col gap-2">
+                    <button
+                      className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
+                      onClick={() => dispatch(setSortBy('title'))}
+                    >
+                      By Title
+                    </button>
+                    <button
+                      className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
+                      onClick={() => dispatch(setSortBy('progress'))}
+                    >
+                      By Progress
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          <div className="w-full md:flex-1 md:justify-center md:flex">
+            <TabsList className="flex w-full md:w-fit overflow-x-auto justify-center ">
+              {status_options.map(({ label, value }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="dark:data-[state=active]:bg-slate-800 hover:scale-110 data-[state=active]:bg-stone-50 data-[state=active]:border dark:border-none rounded-xl px-5 py-3"
+                >
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              className="items-center flex py-2 px-4 border rounded-xl gap-2"
+              onClick={() => setFilter((prev) => !prev)}
+            >
+              <Icon icon="solar:filter-bold-duotone" />
+              <span>Filters</span>
+            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="items-center flex py-2 px-4 border rounded-xl gap-2">
+                  <Icon icon="mynaui:filter-solid" />
+                  <span>Sort</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-40 bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
+                <div className="flex flex-col gap-2">
+                  <button
+                    className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
+                    onClick={() => dispatch(setSortBy('title'))}
+                  >
+                    By Title
+                  </button>
+                  <button
+                    className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
+                    onClick={() => dispatch(setSortBy('progress'))}
+                  >
+                    By Progress
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+        {filter && (
+          <motion.div
+            className="flex flex-col md:flex-row gap-4 md:gap-8 my-3 md:my-8 justify-evenly"
+            initial="hidden"
+            animate="show"
+          >
+            <MultiSelectCombobox
+              options={
+                Array.isArray(categories) ? categories.map((c) => c.name) : []
+              }
+              value={filters.category}
+              onChange={(selected) =>
+                dispatch(setFilters({ category: selected }))
+              }
+              placeholder="Select Categories"
+            />
+            <SingleSelectCombobox
+              options={languages}
+              value={filters.language}
+              onChange={(selected) =>
+                dispatch(setFilters({ language: selected }))
+              }
+              placeholder="Select a Language"
+            />
+          </motion.div>
+        )}
         <TabsContent value={filters.status || 'none'}>
           {loading ? (
             <motion.div
@@ -139,13 +242,13 @@ const CatalogContainer = () => {
             </motion.div>
           ) : (
             <motion.div
-              className="grid grid-cols-1  md:grid-cols-2 gap-16"
+              className="grid grid-cols-1  md:grid-cols-2 gap-16 mt-10"
               variants={bookItemVariants}
               initial="hidden"
               animate="show"
             >
-              {filteredBooks.length > 0 ? (
-                <BookCard filteredBook={filteredBooks} />
+              {sortedBooks.length > 0 ? (
+                <BookCard filteredBook={sortedBooks} />
               ) : (
                 <div className="w-full flex justify-center font-semibold text-2xl col-span-2 my-52">
                   <p>You don't have any book</p>
@@ -156,11 +259,13 @@ const CatalogContainer = () => {
         </TabsContent>
       </Tabs>
 
-      <CustomPagination
-        limit={pagination.limit}
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-      />
+      <div className="my-10">
+        <CustomPagination
+          limit={pagination.limit}
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+        />
+      </div>
     </main>
   );
 };

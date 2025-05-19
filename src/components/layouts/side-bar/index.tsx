@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -8,33 +8,13 @@ import { menu } from '@/lib/data';
 import { usePathname, useRouter } from 'next/navigation';
 
 interface SidebarProps {
-  onToggleSidebar?: (isOpen: boolean) => void;
+  onToggleSidebar: () => void;
+  isOpen: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar, isOpen }) => {
   const router = useRouter();
   const pathname = usePathname();
-
-  // Use useEffect to load the state from localStorage on the client side
-  useEffect(() => {
-    const storedValue = localStorage.getItem('isSidebarOpen');
-    if (storedValue !== null) {
-      setIsOpen(JSON.parse(storedValue));
-    }
-  }, []);
-
-  const handleToggleSidebar = () => {
-    const newIsOpen = !isOpen;
-    setIsOpen(newIsOpen);
-    localStorage.setItem('isSidebarOpen', JSON.stringify(newIsOpen));
-
-    // Dispatch custom event to notify other components
-    window.dispatchEvent(new Event('sidebarToggle'));
-
-    // Call the parent component's toggle handler if needed
-    if (onToggleSidebar) onToggleSidebar(newIsOpen);
-  };
 
   const arrowVariants = {
     open: { rotate: 180 },
@@ -43,7 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
 
   return (
     <nav className="w-full overflow-hidden border border-1 ">
-      <div className="flex justify-between items-center bg-gray-100 dark:bg-gray-900 p-4 ps-2 pb-3 transition-all duration-500 top-0 z-50">
+      <div className="flex justify-between items-center bg-gray-100 dark:bg-gray-900  p-4 ps-2 pb-3 transition-all duration-500 top-0 z-50">
         <div className="flex align-middle">
           <Link href={'/'}>
             <div className={`flex  justify-between gap-5 align-middle `}>
@@ -71,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
             } `}
           >
             <button
-              onClick={handleToggleSidebar}
+              onClick={onToggleSidebar}
               className="text-2xl rounded-full p-1 border bg-slate-100 dark:bg-slate-900"
             >
               <motion.div
@@ -92,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggleSidebar }) => {
       </div>
 
       <div
-        className={`h-screen  backdrop-filter backdrop-blur-md bg-gray-100 dark:bg-gray-900 py-3 pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
+        className={`h-screen  backdrop-filter backdrop-blur-md bg-gray-100/60 dark:bg-gray-900/60 md:bg-gray-100 md:dark:bg-gray-900 py-3 pb-20 max-h-screen overflow-y-auto overflow-x-hidden scroll
            md:relative ${isOpen ? 'w-full md:min-w-48 ' : 'w-[4.4em]'}`}
       >
         <h1 className="mx-3 font-mono font-bold text-neutral-400 text-md my-2">

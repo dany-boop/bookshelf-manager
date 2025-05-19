@@ -16,7 +16,6 @@ type Props = {
 };
 const TopBar: FC<Props> = ({ isSidebarOpen }) => {
   const router = useRouter();
-  const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const user = useSelector((state: RootState) => state.auth.user);
 
   const dispatch = useDispatch();
@@ -37,18 +36,6 @@ const TopBar: FC<Props> = ({ isSidebarOpen }) => {
     }
   };
 
-  const handleFullScreenToggle = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullScreen(true);
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-        setIsFullScreen(false);
-      }
-    }
-  };
-
   return (
     <>
       <header
@@ -61,19 +48,6 @@ const TopBar: FC<Props> = ({ isSidebarOpen }) => {
         <div className="flex px-7 justify-between items-center h-full border-b border-1 bg-gray-100/80 dark:bg-gray-900/80  backdrop-filter backdrop-blur-md">
           <div className="text-xl"></div>
           <div className="flex gap-10 align-middle">
-            <button>
-              <Icon
-                icon={`solar:${
-                  isFullScreen
-                    ? 'minimize-square-minimalistic-broken'
-                    : 'maximize-square-minimalistic-broken'
-                }`}
-                width={25}
-                className="text-[--color-accent]"
-                onClick={handleFullScreenToggle}
-              />
-            </button>
-
             <div className="my-auto">
               <ModeToggle className="bg-transparent" />
             </div>

@@ -3,7 +3,7 @@ import BookCard from '@/components/common/book-card';
 import OptimizedImage from '@/components/common/image-loading';
 import SkeletonLoader from '@/components/common/skeleton/card-skeleton';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { fetchBooksData } from '@/redux/reducers/bookSlice';
+import { fetchBooksData, resetBooksData } from '@/redux/reducers/bookSlice';
 import { fetchUser } from '@/redux/reducers/userSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Book } from '@prisma/client';
@@ -25,19 +25,17 @@ const ContainerFriendPage = () => {
   const friendId = params?.id as string;
   const dispatch = useDispatch<AppDispatch>();
 
-  const { readBooks, totalBooks, finishedBooks, catalog, loading, error } =
-    useSelector((state: RootState) => state.books);
-  const { id, email, username, photo_url } = useSelector(
-    (state: RootState) => state.user
-  );
+  const { catalog, loading } = useSelector((state: RootState) => state.books);
+  const { username, photo_url } = useSelector((state: RootState) => state.user);
 
   console.log(friendId);
   useEffect(() => {
     if (friendId) {
+      dispatch(resetBooksData());
       dispatch(
         fetchBooksData({
           page: 1,
-          limit: 5, // load enough for display
+          limit: 5,
           userId: friendId,
         })
       );
@@ -73,9 +71,8 @@ const ContainerFriendPage = () => {
             loading="lazy"
             className="object-cover object-center"
           />
-
-          {/* <Image quality={100} /> */}
         </div>
+
         <div className="absolute flex top-48 left-10">
           <Avatar className=" h-28 w-28 shadow-md ">
             <AvatarImage src={photo_url} alt="User Picture" />
@@ -88,7 +85,7 @@ const ContainerFriendPage = () => {
       </div>
 
       <section className="mb-6">
-        <h3 className="text-lg font-medium mb-2">Currently Reading</h3>
+        <h3 className="text-lg font-medium my-5">Currently Reading</h3>
         {loading ? (
           <SkeletonLoader />
         ) : currentlyReading ? (

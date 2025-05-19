@@ -59,8 +59,6 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
                 width={200}
                 height={200}
                 className="min-w-40 w-40 h-60 bg-cover mb-2 rounded-xl"
-                // placeholder="blur"
-                // blurDataURL="/assets/default-image.png"
                 loading="lazy"
               />
               <Dialog>
