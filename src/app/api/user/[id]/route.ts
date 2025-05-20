@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { nanoid } from 'nanoid';
@@ -7,8 +6,8 @@ import { writeFile } from 'fs/promises';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/user');
 const ONE_MB = 1024 * 1024; // 1MB in bytes
 
@@ -221,7 +220,6 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     );
   }
 }
-
 
 export function OPTIONS(): NextResponse {
   return NextResponse.json({ methods: ['PUT', 'DELETE'] });

@@ -200,261 +200,253 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
   }, [dispatch]);
 
   return (
-    <div className="bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-md p-6 rounded-lg max-w-2xl mx-auto shadow-md ">
-      <button
-        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none  disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-        onClick={onClose}
-      >
-        <X className="h-4 w-4" />
-      </button>
-      <div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <h2 className="text-xl mb-5 text-center font-bold">
-              {book ? 'Edit Book' : 'Add New Book'}
-            </h2>
+    <div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <h2 className="text-xl mb-5 text-center font-bold">
+            {book ? 'Edit Book' : 'Add New Book'}
+          </h2>
 
-            {/* Error Message */}
-            {(addBookState.error || editBookState.error) && (
-              <div className="text-red-500">
-                {addBookState.error || editBookState.error}
-              </div>
-            )}
-            <div className=" max-h-96 overflow-y-scroll">
-              <div className="space-y-3 px-3">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <NormalInput {...field} placeholder="Title" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="categories"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <CustomMultiSelect
-                          value={field.value} // the currently selected categories
-                          onChange={field.onChange} // function to update form state
-                          placeholder="Select or Add Categories" // placeholder text
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <textarea
-                          {...field}
-                          placeholder="Description"
-                          className="w-full p-2 border rounded-md focus:border-green-500 focus:outline-none"
-                          rows={2}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  name="language"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <SingleSelectCombobox
-                          options={languages}
-                          value={field.value as string}
-                          onChange={field.onChange}
-                          placeholder="Select a Language"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className=" gap-5">
-                  <FormField
-                    control={form.control}
-                    name="author"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <NormalInput {...field} placeholder="Author" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-5">
-                  <FormField
-                    control={form.control}
-                    name="currentPage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <NormalInput {...field} placeholder="Current Page" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="pages"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <NormalInput {...field} placeholder="Pages" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="isbn"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <NormalInput {...field} placeholder="ISBN" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-5">
-                  <FormField
-                    control={form.control}
-                    name="publisher"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <NormalInput {...field} placeholder="Publisher" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="publication_place"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <NormalInput
-                            {...field}
-                            placeholder="Publication Place"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <select
-                          {...field}
-                          className="w-full p-2 border rounded-md focus:border-green-500"
-                        >
-                          <option value="">Select Status</option>
-                          <option value="reading">Reading</option>
-                          <option value="finished">Finished</option>
-                          <option value="unread">To Read</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="coverImage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            const files = e.dataTransfer.files;
-                            field.onChange(files);
-                            handleImageChange(files);
-                          }}
-                          onDragOver={(e) => e.preventDefault()}
-                          className="w-full border-dashed border-2 border-gray-300 rounded-md p-4 text-center cursor-pointer"
-                        >
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              field.onChange(e.target.files);
-                              handleImageChange(e.target.files);
-                            }}
-                            className="hidden"
-                            id="coverImageInput"
-                          />
-                          <label
-                            htmlFor="coverImageInput"
-                            className="block cursor-pointer"
-                          >
-                            Drag & Drop or Click to Upload
-                          </label>
-                          {previewImage && (
-                            <img
-                              src={previewImage}
-                              alt="Preview"
-                              className="mt-2 h-40 object-contain mx-auto"
-                            />
-                          )}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+          {/* Error Message */}
+          {(addBookState.error || editBookState.error) && (
+            <div className="text-red-500">
+              {addBookState.error || editBookState.error}
             </div>
-
-            <div className="flex items-center  mt-5">
-              <Button
-                type="submit"
-                className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
-              >
-                {addBookState.loading || editBookState.loading ? (
-                  <span className="animate-spin text-center ">
-                    <Icon icon="mingcute:loading-fill" />
-                  </span>
-                ) : (
-                  'Save'
+          )}
+          <div className=" max-h-96 overflow-y-scroll">
+            <div className="space-y-3 px-3">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <NormalInput {...field} placeholder="Title" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
+              />
+
+              <FormField
+                control={form.control}
+                name="categories"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <CustomMultiSelect
+                        value={field.value} // the currently selected categories
+                        onChange={field.onChange} // function to update form state
+                        placeholder="Select or Add Categories" // placeholder text
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <textarea
+                        {...field}
+                        placeholder="Description"
+                        className="w-full p-2 border rounded-md focus:border-green-500 focus:outline-none"
+                        rows={2}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                name="language"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <SingleSelectCombobox
+                        options={languages}
+                        value={field.value as string}
+                        onChange={field.onChange}
+                        placeholder="Select a Language"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className=" gap-5">
+                <FormField
+                  control={form.control}
+                  name="author"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <NormalInput {...field} placeholder="Author" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-5">
+                <FormField
+                  control={form.control}
+                  name="currentPage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <NormalInput {...field} placeholder="Current Page" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pages"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <NormalInput {...field} placeholder="Pages" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="isbn"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <NormalInput {...field} placeholder="ISBN" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-5">
+                <FormField
+                  control={form.control}
+                  name="publisher"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <NormalInput {...field} placeholder="Publisher" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="publication_place"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <NormalInput
+                          {...field}
+                          placeholder="Publication Place"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="w-full p-2 border rounded-md focus:border-green-500"
+                      >
+                        <option value="">Select Status</option>
+                        <option value="reading">Reading</option>
+                        <option value="finished">Finished</option>
+                        <option value="unread">To Read</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="coverImage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const files = e.dataTransfer.files;
+                          field.onChange(files);
+                          handleImageChange(files);
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        className="w-full border-dashed border-2 border-gray-300 rounded-md p-4 text-center cursor-pointer"
+                      >
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            field.onChange(e.target.files);
+                            handleImageChange(e.target.files);
+                          }}
+                          className="hidden"
+                          id="coverImageInput"
+                        />
+                        <label
+                          htmlFor="coverImageInput"
+                          className="block cursor-pointer"
+                        >
+                          Drag & Drop or Click to Upload
+                        </label>
+                        {previewImage && (
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="mt-2 h-40 object-contain mx-auto"
+                          />
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </form>
-        </Form>
-      </div>
+          </div>
+
+          <div className="flex items-center  mt-5">
+            <Button
+              type="submit"
+              className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
+            >
+              {addBookState.loading || editBookState.loading ? (
+                <span className="animate-spin text-center ">
+                  <Icon icon="mingcute:loading-fill" />
+                </span>
+              ) : (
+                'Save'
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 };

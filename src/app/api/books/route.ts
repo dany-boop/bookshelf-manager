@@ -4,8 +4,7 @@ import path from 'path';
 import { nanoid } from 'nanoid';
 import sharp from 'sharp';
 import { supabase } from '@/lib/supabase';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 // Define the upload directory and the 1MB threshold in bytes.
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads');

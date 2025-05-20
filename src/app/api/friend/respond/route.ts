@@ -1,7 +1,5 @@
-import { PrismaClient, FriendshipStatus } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
 
 export async function PUT(req: NextRequest) {
   const body = await req.json();

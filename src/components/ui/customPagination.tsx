@@ -7,9 +7,10 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination'; // Import ShadCN Pagination components
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setCurrentPage, setLimit } from '@/redux/reducers/bookSlice';
-import { RootState, AppDispatch } from '@/redux/store';
+import { AppDispatch } from '@/redux/store';
+import { Select, SelectTrigger, SelectContent, SelectItem } from './select';
 
 interface PaginationProps {
   currentPage: number;
@@ -33,38 +34,34 @@ const CustomPagination: React.FC<PaginationProps> = ({
   };
 
   // handling limit value
-  const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLimit = parseInt(e.target.value, 10);
+  const handleLimitChange = (newValue: string) => {
+    const newLimit = parseInt(newValue, 10);
     dispatch(setLimit(newLimit));
-    dispatch(setCurrentPage(1)); // Reset to page 1 when changing limit
+    dispatch(setCurrentPage(1));
   };
 
   return (
     <Pagination>
-      <PaginationContent
-      // className="absolute bottom-5"
-      >
-        {/* Limit Selector */}
-        <div>
+      <PaginationContent>
+        <div className="flex items-center ">
           <label className="mr-2">Show</label>
-          <select
-            value={limit}
-            onChange={handleLimitChange}
-            className="p-2 border rounded"
-          >
-            {LIMIT_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-          <span className="ml-2">per page</span>
+
+          <Select value={String(limit)} onValueChange={handleLimitChange}>
+            <SelectTrigger>{limit}</SelectTrigger>
+            <SelectContent>
+              {LIMIT_OPTIONS.map((opt) => (
+                <SelectItem value={String(opt)} key={opt}>
+                  {opt}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <PaginationItem>
           <PaginationPrevious
             onClick={(e) => {
               if (currentPage === 1) {
-                e.preventDefault(); // Prevent clicking if already on the first page
+                e.preventDefault();
               } else {
                 handlePageChange(currentPage - 1);
               }

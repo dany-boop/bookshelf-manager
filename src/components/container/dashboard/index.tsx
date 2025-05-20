@@ -9,6 +9,7 @@ import Image from 'next/image';
 import React, { FC, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
+import { Dialog, DialogContent, DialogOverlay } from '@/components/ui/dialog';
 
 type Props = {};
 
@@ -135,14 +136,22 @@ const DashboardContainer: FC = (props: Props) => {
 
           {isFormOpen && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-              <AddBookForm
-                book={selectedBook}
-                onClose={closeForm}
-                onSuccess={() => {
-                  closeForm();
-                  refetchBooks();
-                }}
-              />
+              <Dialog
+                open={isFormOpen}
+                onOpenChange={(open) => !open && closeForm()}
+              >
+                <DialogContent className="bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-md p-6 rounded-lg max-w-xl mx-auto shadow-md">
+                  <AddBookForm
+                    book={selectedBook}
+                    onClose={closeForm}
+                    onSuccess={() => {
+                      closeForm();
+                      refetchBooks();
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
+              ✅ This automatically:
             </div>
           )}
         </div>

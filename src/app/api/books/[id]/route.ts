@@ -6,12 +6,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import sharp from 'sharp';
 import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads');
 const ONE_MB = 1024 * 1024; // 1MB in bytes
 
-// ------------- IMAGE HANDLING HELPERS ------------- //
 async function saveImage(file: File): Promise<string | null> {
   const isSupabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
   return isSupabaseConfigured ? uploadToSupabase(file) : saveLocally(file);
@@ -88,9 +87,6 @@ async function deleteImageLocally(imagePath: string): Promise<void> {
   }
 }
 
-/**
- * Deletes an image from Supabase Storage.
- */
 async function deleteImageFromSupabase(filePath: string): Promise<void> {
   try {
     const { error } = await supabase.storage
@@ -106,8 +102,6 @@ async function deleteImageFromSupabase(filePath: string): Promise<void> {
   }
 }
 
-// ------------- API HANDLERS ------------- //
-//  PUT /api/books/:id
 export async function PUT(req: NextRequest): Promise<NextResponse> {
   try {
     const { pathname } = new URL(req.url);
@@ -119,7 +113,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     const formData = await req.formData();
     const {
       title,
-      categories: categoriesInput, // Expecting comma-separated string
+      categories: categoriesInput,
       description,
       author,
       pages,
