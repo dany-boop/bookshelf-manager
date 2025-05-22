@@ -14,7 +14,7 @@ import {
   setSortBy,
 } from '@/redux/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/redux/store';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import BookCard from '@/components/common/book-card';
@@ -29,6 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { bookVariant } from '@/components/ui/animate-variants';
 
 const CatalogContainer = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -42,7 +43,7 @@ const CatalogContainer = () => {
   const { filters, sortBy } = useSelector((state: RootState) => state.books);
 
   useEffect(() => {
-    dispatch(fetchCategories() as any);
+    dispatch(fetchCategories());
   }, [dispatch]);
 
   useEffect(() => {
@@ -69,15 +70,14 @@ const CatalogContainer = () => {
 
   const filteredBooks = catalog.filter((book: any) => {
     if (filters.category.length === 0) return true;
-
     const bookCategoryNames = book.categories?.map((cat: any) =>
       cat.name.toLowerCase()
     );
-
     return filters.category.some((selected: any) =>
       bookCategoryNames?.includes(selected.toLowerCase())
     );
   });
+
   const sortedBooks = [...filteredBooks].sort((a: any, b: any) => {
     if (sortBy === 'title') {
       return a.title.localeCompare(b.title);
@@ -88,19 +88,42 @@ const CatalogContainer = () => {
     return 0;
   });
 
-  const bookItemVariants = {
-    hidden: { opacity: 0, x: -100 },
-    show: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 30,
-        staggerChildren: 0.1,
-      },
-    },
-  };
+  const FilterButton = () => (
+    <button
+      className="items-center flex py-2 px-4 border rounded-xl gap-2"
+      onClick={() => setFilter((prev) => !prev)}
+    >
+      <Icon icon="solar:filter-bold-duotone" />
+      <span>Filters</span>
+    </button>
+  );
+
+  const SortDropdown = () => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="items-center flex py-2 px-4 border rounded-xl gap-2">
+          <Icon icon="mynaui:filter-solid" />
+          <span>Sort</span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-40 bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
+        <div className="flex flex-col gap-2">
+          <button
+            className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
+            onClick={() => dispatch(setSortBy('title'))}
+          >
+            By Title
+          </button>
+          <button
+            className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
+            onClick={() => dispatch(setSortBy('progress'))}
+          >
+            By Progress
+          </button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 
   return (
     <main>
@@ -120,37 +143,8 @@ const CatalogContainer = () => {
             />
 
             <div className="flex gap-3 md:hidden">
-              <button
-                className="items-center flex py-2 px-4 border rounded-xl gap-2"
-                onClick={() => setFilter((prev) => !prev)}
-              >
-                <Icon icon="solar:filter-bold-duotone" />
-                <span>Filters</span>
-              </button>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button className="items-center flex py-2 px-4 border rounded-xl gap-2">
-                    <Icon icon="mynaui:filter-solid" />
-                    <span>Sort</span>
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-40 bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
-                  <div className="flex flex-col gap-2">
-                    <button
-                      className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
-                      onClick={() => dispatch(setSortBy('title'))}
-                    >
-                      By Title
-                    </button>
-                    <button
-                      className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
-                      onClick={() => dispatch(setSortBy('progress'))}
-                    >
-                      By Progress
-                    </button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <FilterButton />
+              <SortDropdown />
             </div>
           </div>
 
@@ -169,39 +163,11 @@ const CatalogContainer = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <button
-              className="items-center flex py-2 px-4 border rounded-xl gap-2"
-              onClick={() => setFilter((prev) => !prev)}
-            >
-              <Icon icon="solar:filter-bold-duotone" />
-              <span>Filters</span>
-            </button>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="items-center flex py-2 px-4 border rounded-xl gap-2">
-                  <Icon icon="mynaui:filter-solid" />
-                  <span>Sort</span>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-40 bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
-                <div className="flex flex-col gap-2">
-                  <button
-                    className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
-                    onClick={() => dispatch(setSortBy('title'))}
-                  >
-                    By Title
-                  </button>
-                  <button
-                    className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1 rounded"
-                    onClick={() => dispatch(setSortBy('progress'))}
-                  >
-                    By Progress
-                  </button>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <FilterButton />
+            <SortDropdown />
           </div>
         </div>
+
         {filter && (
           <motion.div
             className="flex flex-col md:flex-row gap-4 md:gap-8 my-3 md:my-8 justify-evenly"
@@ -232,7 +198,7 @@ const CatalogContainer = () => {
           {loading ? (
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-16"
-              variants={bookItemVariants}
+              variants={bookVariant}
               initial="hidden"
               animate="show"
             >
@@ -243,7 +209,7 @@ const CatalogContainer = () => {
           ) : (
             <motion.div
               className="grid grid-cols-1  md:grid-cols-2 gap-16 mt-10"
-              variants={bookItemVariants}
+              variants={bookVariant}
               initial="hidden"
               animate="show"
             >

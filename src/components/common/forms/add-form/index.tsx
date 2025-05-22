@@ -1,5 +1,5 @@
-import React, { FC, useEffect, useState } from 'react';
-import { Input, NormalInput } from '@/components/ui/input';
+import React, { FC, useEffect, useMemo, useState } from 'react';
+import { NormalInput } from '@/components/ui/input';
 import {
   addBook,
   editBook,
@@ -8,9 +8,7 @@ import {
 } from '@/redux/reducers/bookSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { BookStatus } from '@prisma/client';
-import { Book as PrismaBook } from '@prisma/client';
 import { useDispatch, useSelector } from 'react-redux';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -21,29 +19,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { SingleSelectCombobox } from '@/components/ui/MultiSelect';
-import { categories as defaultCategories, languages } from '@/lib/data';
+import { languages } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
-import { X } from 'lucide-react';
-import {
-  fetchCategories,
-  selectCategories,
-} from '@/redux/reducers/categorySlice';
+import { fetchCategories } from '@/redux/reducers/categorySlice';
 import { CustomMultiSelect } from '@/components/ui/customMultiSlect';
-
-type BookProgress = {
-  currentPage: number;
-  userId: string;
-  notes: string | null;
-};
-
-type ExtendedBook = PrismaBook & {
-  readingProgress?: number;
-  progress?: BookProgress;
-  currentPage?: number;
-  notes?: string | null;
-  categories?: { id: string; name: string }[];
-};
+import { BookFromValues, bookSchema } from '@/schemas/book-form';
+import { ExtendedBook } from '@/types/extended-types';
 
 interface BookFormProps {
   book?: ExtendedBook | null;
@@ -51,90 +33,19 @@ interface BookFormProps {
   onSuccess?: () => void;
 }
 
-const isValidISBN = (isbn: string) => {
-  const isbn10 = /^(?:\d{9}X|\d{10})$/;
-  const isbn13 = /^(?:\d{13})$/;
-  return (
-    isbn10.test(isbn.replace(/-/g, '')) || isbn13.test(isbn.replace(/-/g, ''))
-  );
-};
-
-const bookSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  author: z.string().min(1, 'Author is required'),
-  categories: z.array(z.string()).min(1, 'categories is required'),
-  status: z.nativeEnum(BookStatus, {
-    errorMap: () => ({ message: 'Status is required' }),
-  }),
-  description: z.string().optional(),
-  publisher: z.string().optional(),
-  publication_place: z.string().optional(),
-
-  isbn: z
-    .string()
-    .min(1, 'ISBN is required')
-    .refine(
-      (val) => !val || /^(?:\d{9}X|\d{10}|\d{13})$/.test(val.replace(/-/g, '')),
-      {
-        message: 'Invalid ISBN! Must be ISBN-10 or ISBN-13 format.',
-      }
-    ),
-
-  pages: z
-    .string()
-    .optional()
-    .refine((val) => !val || /^\d+$/.test(val), {
-      message: 'Pages must be a valid number.',
-    }),
-
-  currentPage: z
-    .string()
-    .optional()
-    .refine((val) => !val || /^\d+$/.test(val), {
-      message: 'Current Page must be a valid number.',
-    }),
-
-  language: z.string().optional(),
-
-  coverImage: z
-    .any()
-    .optional()
-    .refine(
-      (files) =>
-        !files ||
-        (files instanceof FileList && files.length === 0) ||
-        (files instanceof FileList && files[0].size <= 5 * 1024 * 1024),
-      {
-        message: 'Cover image must be smaller than 5MB.',
-      }
-    )
-    .refine(
-      (files) =>
-        !files ||
-        (files instanceof FileList && files.length === 0) ||
-        (files instanceof FileList &&
-          ['image/jpeg', 'image/png', 'image/webp'].includes(files[0].type)),
-      {
-        message: 'Cover image must be in JPG, PNG, or WEBP format.',
-      }
-    ),
-});
-
 const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { addBookState, editBookState } = useSelector(
     (state: RootState) => state.books
   );
   const user = useSelector((state: RootState) => state.auth.user);
-  const categoryOptions = useSelector(selectCategories) || [];
-  const [newCategory, setNewCategory] = useState('');
+
   const [previewImage, setPreviewImage] = useState<string | null>(
     book?.coverImage ? book.coverImage : null
   );
 
-  const form = useForm<z.infer<typeof bookSchema>>({
-    resolver: zodResolver(bookSchema),
-    defaultValues: {
+  const defaultValues = useMemo(
+    () => ({
       title: book?.title || '',
       author: book?.author || '',
       categories: book?.categories?.map((c) => c.name) || [],
@@ -143,11 +54,17 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
       publisher: book?.publisher || '',
       publication_place: book?.publication_place || '',
       isbn: book?.isbn || '',
-      pages: book?.pages?.toString(),
+      pages: book?.pages?.toString() || '',
       language: book?.language || '',
       currentPage: book?.progress?.currentPage?.toString() || '',
       coverImage: undefined,
-    },
+    }),
+    [book]
+  );
+
+  const form = useForm<BookFromValues>({
+    resolver: zodResolver(bookSchema),
+    defaultValues,
   });
 
   const handleImageChange = (files: FileList | null) => {
@@ -157,10 +74,8 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
       setPreviewImage(url);
     }
   };
-
-  const onSubmit = (values: z.infer<typeof bookSchema>) => {
+  const buildFormData = (values: BookFromValues, userId?: string): FormData => {
     const formData = new FormData();
-
     Object.entries(values).forEach(([key, value]) => {
       if (
         key === 'coverImage' &&
@@ -168,12 +83,20 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
         value.length > 0
       ) {
         formData.append(key, value[0]);
-      } else if (value) {
+      } else if (value !== undefined && value !== null) {
         formData.append(key, value as string);
       }
     });
 
-    if (user) formData.append('userId', user.id);
+    if (userId) {
+      formData.append('userId', userId);
+    }
+
+    return formData;
+  };
+
+  const onSubmit = (values: BookFromValues) => {
+    const formData = buildFormData(values, user?.id);
 
     const action = book
       ? dispatch(editBook({ id: book.id, formData }))
@@ -191,8 +114,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
   };
 
   useEffect(() => {
-    dispatch(fetchCategories() as any);
-
+    dispatch(fetchCategories());
     return () => {
       dispatch(resetAddBookState());
       dispatch(resetEditBookState());

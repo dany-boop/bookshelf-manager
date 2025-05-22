@@ -1,8 +1,7 @@
 'use client';
-import { loginFailure, loginSuccess } from '@/redux/reducers/authSlice';
+import { loginUser } from '@/redux/reducers/authSlice';
 import React, { useState } from 'react';
-import { z } from 'zod';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormControl, FormMessage } from '@/components/ui/form';
@@ -12,28 +11,13 @@ import { useRouter } from 'next/navigation';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-
-const loginSchema = z.object({
-  email: z
-    .string()
-    .nonempty('Email cannot be empty')
-    .email('email must be have @ something')
-    .min(3, { message: 'email cannot be empty' }),
-  password: z
-    .string()
-    .nonempty('Password cannot be empty')
-    .min(6, { message: 'Password cannot be empty' }),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { LoginFormValues, loginSchema } from '@/schemas/login';
+import { AppDispatch, RootState } from '@/redux/store';
 
 const LoginForm = () => {
   const methods = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   });
 
   const {
@@ -42,44 +26,21 @@ const LoginForm = () => {
     formState: { errors },
   } = methods;
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { loading, error } = useSelector((state: RootState) => state.auth);
   const [visible, setVisible] = useState(false);
 
-  const handleToggleVisibility = () => {
-    setVisible((prevVisible) => !prevVisible);
-  };
-
   const onSubmit = async (data: LoginFormValues) => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+    const result = await dispatch(loginUser(data));
 
-      if (response.ok) {
-        const { user, token } = await response.json();
-        dispatch(loginSuccess({ user, token }));
-        toast.success('Login successful! Redirecting...');
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1500);
-      } else {
-        const errorData = await response.json();
-        dispatch(loginFailure(errorData.message));
-        toast.error(errorData.message || 'Login failed. Try again.');
-      }
-    } catch (error: any) {
-      dispatch(loginFailure(error.message));
-      toast.error('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+    if (loginUser.fulfilled.match(result)) {
+      toast.success('Login successful! Redirecting...');
+      setTimeout(() => router.push('/dashboard'), 1500);
+    } else {
+      toast.error(result.payload || 'Login failed');
     }
   };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -116,14 +77,17 @@ const LoginForm = () => {
               />
               <button
                 type="button"
-                onClick={handleToggleVisibility}
+                onClick={() => setVisible((v) => !v)}
                 className="absolute top-1/4 right-4 transform cursor-pointer text-slate-800 dark:text-slate-200 hover:bg-gray-400 p-0.5 rounded-full"
               >
-                {visible ? (
-                  <Icon icon="solar:eye-bold-duotone" width={25} />
-                ) : (
-                  <Icon icon="iconamoon:eye-off-duotone" width={25} />
-                )}
+                <Icon
+                  icon={
+                    visible
+                      ? 'solar:eye-bold-duotone'
+                      : 'iconamoon:eye-off-duotone'
+                  }
+                  width={25}
+                />
               </button>
 
               <FormMessage>{errors.password?.message}</FormMessage>

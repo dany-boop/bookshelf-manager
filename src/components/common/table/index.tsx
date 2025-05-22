@@ -1,5 +1,5 @@
 'use client';
-import React, { FC, useRef, useState } from 'react';
+import React, { FC, useMemo, useRef, useState } from 'react';
 import { Icon } from '@iconify/react';
 import {
   Table,
@@ -9,7 +9,6 @@ import {
   TableBody,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Book as PrismaBook } from '@prisma/client';
 import SearchBooks from '../debounce-search';
 import { useDispatch } from 'react-redux';
 import { deleteBook } from '@/redux/reducers/bookSlice';
@@ -33,15 +32,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-type Categories = {
-  id: number;
-  name: string;
-};
-type ExtendedBook = PrismaBook & {
-  readingProgress?: number;
-  categories?: Categories[];
-};
+import { ExtendedBook } from '@/types/extended-types';
+import { useSort } from '@/hooks/useSort';
+import { getStatusClass } from '@/hooks/statusClass';
 
 type Props = {
   books: ExtendedBook[];
@@ -61,14 +54,13 @@ const BooksTable: FC<Props> = ({
   limit,
 }) => {
   const tableRef = useRef(null);
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof ExtendedBook;
-    direction: 'asc' | 'desc';
-  } | null>(null);
+
   const [searchTerm] = useState('');
   const [selectedBook, setSelectedBook] = useState<ExtendedBook | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
+
+  const { sortConfig, handleSort, sortedData } = useSort<ExtendedBook>();
 
   // Open delete confirmation dialog
   const confirmDelete = (book: ExtendedBook) => {
@@ -85,56 +77,24 @@ const BooksTable: FC<Props> = ({
     setSelectedBook(null);
   };
 
-  const handleSort = (key: keyof ExtendedBook) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key) {
-      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
-    }
+  const filteredBooks = useMemo(() => {
+    const data = sortedData(books);
+    return data.filter((book) =>
+      Object.values(book).some((value) =>
+        String(value).toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [books, searchTerm, sortedData]);
 
-    setSortConfig({ key, direction });
+  const renderSortIcon = (key: keyof ExtendedBook) => {
+    if (sortConfig?.key !== key) return null;
+    return sortConfig.direction === 'asc' ? (
+      <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
+    ) : (
+      <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
+    );
   };
 
-  const sortedBooks = React.useMemo(() => {
-    let sortableBooks = [...books];
-    if (sortConfig) {
-      sortableBooks.sort((a, b) => {
-        const aValue = a[sortConfig.key as keyof ExtendedBook] ?? '';
-        const bValue = b[sortConfig.key as keyof ExtendedBook] ?? '';
-        if (aValue === undefined && bValue === undefined) return 0;
-        if (aValue === undefined) return 1;
-        if (bValue === undefined) return -1;
-        // Compare defined values
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-
-    return sortableBooks;
-  }, [books, sortConfig]);
-
-  const filteredBooks = sortedBooks.filter((book) =>
-    Object.values(book).some((value) =>
-      String(value).toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
-
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'finished':
-        return 'bg-green-500/30 text-green-500';
-      case 'unread':
-        return 'bg-yellow-500/30 text-yellow-500';
-      case 'reading':
-        return 'bg-blue-500/30 text-blue-500';
-      default:
-        return 'bg-gray-500/30 text-yellow-500';
-    }
-  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -183,98 +143,28 @@ const BooksTable: FC<Props> = ({
           <SearchBooks userId={userId} limit={limit} />
         </div>
       </div>
-      <Table ref={tableRef} className="overflow-x-scroll ">
-        <TableHeader className="border-b-2 dark:border-zinc-600 ">
-          <TableRow>
-            <TableCell
-              onClick={() => handleSort('title')}
-              className="cursor-pointer font-bold "
-            >
-              <span className="flex gap-3 justify-start">
-                Title
-                {sortConfig?.key === 'title' ? (
-                  sortConfig.direction === 'asc' ? (
-                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
-                  ) : (
-                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
-                  )
-                ) : (
-                  ''
-                )}
-              </span>
-            </TableCell>
-            <TableCell
-              onClick={() => handleSort('author')}
-              className="cursor-pointer font-bold"
-            >
-              <span className="flex gap-3 justify-start">
-                Author{' '}
-                {sortConfig?.key === 'author' ? (
-                  sortConfig.direction === 'asc' ? (
-                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
-                  ) : (
-                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
-                  )
-                ) : (
-                  ''
-                )}
-              </span>
-            </TableCell>
-            <TableCell
-              onClick={() => handleSort('categories')}
-              className="cursor-pointer font-bold"
-            >
-              <span className="flex gap-3 justify-center">
-                Category{' '}
-                {sortConfig?.key === 'categories' ? (
-                  sortConfig.direction === 'asc' ? (
-                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
-                  ) : (
-                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
-                  )
-                ) : (
-                  ''
-                )}
-              </span>
-            </TableCell>
 
-            <TableCell
-              onClick={() => handleSort('readingProgress')}
-              className="cursor-pointer font-bold"
-            >
-              <span className="flex gap-3 justify-center">
-                Progress
-                {sortConfig?.key === 'readingProgress' ? (
-                  sortConfig.direction === 'asc' ? (
-                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
-                  ) : (
-                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
-                  )
-                ) : (
-                  ''
-                )}
-              </span>
-            </TableCell>
-            <TableCell
-              onClick={() => handleSort('status')}
-              className="cursor-pointer font-bold"
-            >
-              <span className="flex gap-3 justify-center">
-                Status{' '}
-                {sortConfig?.key === 'status' ? (
-                  sortConfig.direction === 'asc' ? (
-                    <Icon icon="solar:alt-arrow-up-bold-duotone" width={20} />
-                  ) : (
-                    <Icon icon="solar:alt-arrow-down-bold-duotone" width={20} />
-                  )
-                ) : (
-                  ''
-                )}
-              </span>
-            </TableCell>
-            <TableCell className="cursor-pointer font-bold">Action</TableCell>
+      <Table ref={tableRef} className="overflow-x-scroll ">
+        <TableHeader className="border-b-2 dark:border-zinc-600">
+          <TableRow>
+            {['title', 'author', 'categories', 'readingProgress', 'status'].map(
+              (key) => (
+                <TableCell
+                  key={key}
+                  onClick={() => handleSort(key as keyof ExtendedBook)}
+                  className="cursor-pointer font-bold"
+                >
+                  <span className="flex gap-2 items-center capitalize">
+                    {key.replace(/([A-Z])/g, ' $1')}{' '}
+                    {renderSortIcon(key as keyof ExtendedBook)}
+                  </span>
+                </TableCell>
+              )
+            )}
+            <TableCell className="font-bold">Action</TableCell>
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {loading ? (
             [...Array(5)].map((_, index) => (

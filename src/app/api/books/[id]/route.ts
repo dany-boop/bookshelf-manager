@@ -192,7 +192,6 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
         })
       );
 
-      // First disconnect all existing categories
       await prisma.book.update({
         where: { id: Number(id) },
         data: {
@@ -206,7 +205,6 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
         connectOrCreate: categoryOperations,
       };
     } else {
-      // If no categories provided, disconnect all
       updateData.categories = {
         set: [],
       };

@@ -151,7 +151,6 @@ const DashboardContainer: FC = (props: Props) => {
                   />
                 </DialogContent>
               </Dialog>
-              ✅ This automatically:
             </div>
           )}
         </div>

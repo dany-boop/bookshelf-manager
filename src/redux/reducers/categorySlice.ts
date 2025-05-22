@@ -5,7 +5,7 @@ import { BookCategory } from '@prisma/client';
 const apiUrl = '/api/categories'; // Adjust the API URL for your categories
 
 // Fetch categories
-export const fetchCategories = createAsyncThunk(
+export const fetchCategories = createAsyncThunk<BookCategory[]>(
   'categories/fetchCategories',
   async () => {
     const response = await fetch(apiUrl);

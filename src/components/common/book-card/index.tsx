@@ -15,34 +15,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { bookVariant } from '@/components/ui/animate-variants';
+import { getStatusClass } from '@/hooks/statusClass';
 
 type Props = {
   filteredBook?: any;
 };
 
 const BookCard: FC<Props> = ({ filteredBook }) => {
-  const bookVariant = {
-    hidden: { opacity: 0, x: -50 }, // Start each book off-screen to the left
-    show: {
-      opacity: 1,
-      x: 0,
-      transition: { type: 'spring', stiffness: 200, damping: 25 },
-    },
-  };
-
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'finished':
-        return 'bg-green-500/30 text-green-500';
-      case 'unread':
-        return 'bg-yellow-500/30 text-yellow-500';
-      case 'reading':
-        return 'bg-blue-500/30 text-blue-500';
-      default:
-        return 'bg-gray-500/30 text-yellow-500';
-    }
-  };
-
   return (
     <>
       {filteredBook.map((book: any) => (
@@ -82,10 +62,6 @@ const BookCard: FC<Props> = ({ filteredBook }) => {
                       />
 
                       <div className="md:max-w-lg max-w-md space-y-3 px-4">
-                        {/* <p className="flex gap-2 text-md font-bold">
-                          <span>Title: </span>
-                          <span className="font-medium text-black dark:text-zinc-200">{book.title}</span>
-                        </p> */}
                         <p className="flex gap-2 text-md text-zinc-900 dark:text-zinc-400">
                           <span>Author: </span>
                           <span className="font-medium text-black dark:text-zinc-200">

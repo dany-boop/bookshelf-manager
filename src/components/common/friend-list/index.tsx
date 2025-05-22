@@ -37,12 +37,10 @@ const FriendList = ({ userId }: Props) => {
     resIds,
     error,
   } = useSelector((state: RootState) => state.friends);
+
   const [query, setQuery] = useState('');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  // const [recentlyRequestedIds, setRecentlyRequestedIds] = useState<string[]>(
-  //   []
-  // );
 
   useEffect(() => {
     if (userId) {
@@ -65,7 +63,6 @@ const FriendList = ({ userId }: Props) => {
   };
 
   const handleSendRequest = (receiverId: string) => {
-    // setSendingRequestIds((prev) => [...prev, receiverId]);
     dispatch(sendFriendRequest({ senderId: userId, receiverId }));
   };
 

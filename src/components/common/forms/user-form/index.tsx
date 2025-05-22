@@ -16,6 +16,7 @@ import {
 import { resetEditUserState, updateUser } from '@/redux/reducers/userSlice';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
+import { userSchema, UserValues } from '@/schemas/user';
 
 interface UserFormProps {
   id?: string;
@@ -24,20 +25,6 @@ interface UserFormProps {
   password: string;
   photo_url?: string;
 }
-
-const userSchema = z.object({
-  username: z
-    .string()
-    .nonempty('Username cannot be empty')
-    .min(3, { message: 'Username must be at least 3 characters' }),
-  email: z
-    .string()
-    .nonempty('Email cannot be empty')
-    .email('email must be have @ something')
-    .min(3, { message: 'email must be at least 3 characters' }),
-  password: z.string().optional(),
-  photo_url: z.any().optional(),
-});
 
 const EditUserForm: FC<UserFormProps> = ({ id, username, email, password }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -53,7 +40,7 @@ const EditUserForm: FC<UserFormProps> = ({ id, username, email, password }) => {
     }
   };
 
-  const form = useForm<z.infer<typeof userSchema>>({
+  const form = useForm<UserValues>({
     resolver: zodResolver(userSchema),
     defaultValues: {
       username: username,
@@ -69,7 +56,7 @@ const EditUserForm: FC<UserFormProps> = ({ id, username, email, password }) => {
     setInitialPassword(password);
   }, [id, username, email, password, form]);
 
-  const onSubmit = (values: z.infer<typeof userSchema>) => {
+  const onSubmit = (values: UserValues) => {
     const formBody = new FormData();
     Object.entries(values).forEach(([key, value]) => {
       if (key === 'password' && !value) return;

@@ -19,7 +19,7 @@ const SearchBooks: React.FC<SearchBooksProps> = ({
 }) => {
   const [query, setQuery] = useState<string>('');
   const [page, setPage] = useState<number>(1);
-  const dispatch = useDispatch<AppDispatch>(); // Use AppDispatch type here
+  const dispatch = useDispatch<AppDispatch>();
   const { error } = useSelector((state: RootState) => state.books);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {

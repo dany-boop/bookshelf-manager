@@ -2,40 +2,23 @@
 import { Button } from '@/components/ui/button';
 import { FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { registerUser } from '@/redux/reducers/authSlice';
+import { AppDispatch, RootState } from '@/redux/store';
+import { RegisterFormData, registerSchema } from '@/schemas/register';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const registerSchema = z.object({
-  username: z
-    .string()
-    .nonempty('Username cannot be empty')
-    .min(3, { message: 'Username must be at least 3 characters' }),
-  email: z
-    .string()
-    .nonempty('Email cannot be empty')
-    .email('email must be have @ something')
-    .min(3, { message: 'email must be at least 3 characters' }),
-  password: z
-    .string()
-    .nonempty('Password cannot be empty')
-    .min(6, { message: 'Password must be at least 6 characters' }),
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterForm = () => {
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [visible, setVisible] = useState(false);
 
-  const handleToggleVisibility = () => {
-    setVisible((prevVisible) => !prevVisible);
-  };
+  const { loading, error } = useSelector((state: RootState) => state.auth);
 
   const methods = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -50,29 +33,16 @@ const RegisterForm = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-  });
+  } = methods;
 
   const onSubmit = async (data: RegisterFormData) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+    const resultAction = await dispatch(registerUser(data));
 
-      if (res.ok) {
-        toast.success('Registration successful! Please log in.');
-        router.push('/auth/login');
-      } else {
-        toast.error('Something went wrong');
-      }
-    } catch (error) {
-      toast.error('An error occurred. Please try again later.');
-    } finally {
-      setLoading(false);
+    if (registerUser.fulfilled.match(resultAction)) {
+      toast.success('Registration successful! Please log in.');
+      router.push('/auth/login');
+    } else {
+      toast.error(resultAction.payload || 'Registration failed');
     }
   };
 
@@ -120,14 +90,17 @@ const RegisterForm = () => {
             />
             <button
               type="button"
-              onClick={handleToggleVisibility}
+              onClick={() => setVisible((v) => !v)}
               className="absolute top-1/4 right-4 transform cursor-pointer text-slate-800 dark:text-slate-200 hover:bg-gray-400 p-0.5 rounded-full"
             >
-              {visible ? (
-                <Icon icon="solar:eye-bold-duotone" width={25} />
-              ) : (
-                <Icon icon="iconamoon:eye-off-duotone" width={25} />
-              )}
+              <Icon
+                icon={
+                  visible
+                    ? 'solar:eye-bold-duotone'
+                    : 'iconamoon:eye-off-duotone'
+                }
+                width={25}
+              />
             </button>
             <FormMessage>{errors.password?.message}</FormMessage>
           </div>
