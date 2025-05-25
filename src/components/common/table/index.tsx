@@ -34,7 +34,6 @@ import {
 } from '@/components/ui/tooltip';
 import { ExtendedBook } from '@/types/extended-types';
 import { useSort } from '@/hooks/useSort';
-import { getStatusClass } from '@/hooks/statusClass';
 
 type Props = {
   books: ExtendedBook[];
@@ -95,6 +94,18 @@ const BooksTable: FC<Props> = ({
     );
   };
 
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case 'finished':
+        return 'bg-green-500/30 text-green-500';
+      case 'unread':
+        return 'bg-yellow-500/30 text-yellow-500';
+      case 'reading':
+        return 'bg-blue-500/30 text-blue-500';
+      default:
+        return 'bg-gray-500/30 text-yellow-500';
+    }
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -119,7 +130,10 @@ const BooksTable: FC<Props> = ({
               />
               <span className=" text-zinc-900 dark:text-zinc-50  ">Delete</span>
             </Button>
-            <Button className=" bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50">
+            <Button
+              onClick={() => setIsDialogOpen(false)}
+              className=" bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
+            >
               <span>Cancel</span>
             </Button>
           </DialogFooter>
@@ -265,10 +279,10 @@ const BooksTable: FC<Props> = ({
                           className="text-foreground"
                         />
                       </PopoverTrigger>
-                      <PopoverContent className="flex-col gap-2 w-fit bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
+                      <PopoverContent className="flex-col gap-2 p-1 w-fit bg-zinc-50/50 dark:bg-zinc-800/40 backdrop-filter backdrop-blur-sm">
                         <Button
                           onClick={() => openForm(book)} // Open the form with the book to edit
-                          className="flex justify-start px-2 py-2 w-full"
+                          className="flex justify-start py-2 w-full px-6 hover:bg-stone-50 hover:dark:bg-slate-800"
                         >
                           <Icon
                             icon="solar:pen-new-round-linear"
@@ -280,7 +294,7 @@ const BooksTable: FC<Props> = ({
                           </span>
                         </Button>
                         <Button
-                          className="flex justify-start px-2 py-2 w-full"
+                          className="flex justify-start py-2 w-full px-6 hover:bg-stone-50 hover:dark:bg-slate-800"
                           onClick={() => confirmDelete(book)}
                         >
                           <Icon

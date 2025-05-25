@@ -10,6 +10,11 @@ import { logout } from '@/redux/reducers/authSlice';
 import { RootState } from '@/redux/store';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import FriendList from '@/components/common/friend-list';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 type Props = {
   isSidebarOpen: boolean;
@@ -27,7 +32,6 @@ const TopBar: FC<Props> = ({ isSidebarOpen }) => {
       });
 
       if (response.ok) {
-        // Dispatch logout action to clear the Redux state
         dispatch(logout());
         router.push('/auth/login'); // Redirect to login page
       }
@@ -52,23 +56,41 @@ const TopBar: FC<Props> = ({ isSidebarOpen }) => {
               <ModeToggle className="bg-transparent" />
             </div>
             <div className="my-auto">
-              <Avatar className="md:h-8 md:w-8 h-6 w-6">
-                {user?.photo_url ? (
-                  <AvatarImage src={user?.photo_url} alt="User Picture" />
-                ) : (
-                  <Icon icon="solar:user-circle-outline" width={25} />
-                )}
-              </Avatar>
-            </div>
-            <div className="my-auto">
               <FriendList userId={user?.id} />
             </div>
-            <button
-              className=" bg-red-100 hover:bg-red-200 text-red-600 rounded-lg my-auto"
-              onClick={handleLogout}
-            >
-              <Icon icon="lets-icons:sign-out-squre-duotone" width={30} />
-            </button>
+            <div className="my-auto">
+              <Popover>
+                <PopoverTrigger>
+                  <Avatar className="md:h-8 md:w-8 h-6 w-6">
+                    {user?.photo_url ? (
+                      <AvatarImage src={user?.photo_url} alt="User Picture" />
+                    ) : (
+                      <Icon icon="solar:user-circle-outline" width={25} />
+                    )}
+                  </Avatar>
+                </PopoverTrigger>
+                <PopoverContent className="max-w-44 flex-col gap-5 bg-gray-100/50 dark:bg-gray-900/50  backdrop-filter backdrop-blur-md">
+                  <button
+                    className="flex gap-6 align-center rounded-lg w-full hover:bg-slate-100 hover:dark:bg-slate-900  py-2 px-5"
+                    onClick={() => router.push('/profile')}
+                  >
+                    <Icon icon="solar:user-bold-duotone" width={25} />
+                    Profile
+                  </button>
+                  <button
+                    className="flex gap-5 align-center rounded-lg w-full hover:bg-slate-100 hover:dark:bg-slate-900  py-2 px-5"
+                    onClick={handleLogout}
+                  >
+                    <Icon
+                      icon="lets-icons:sign-out-squre-duotone"
+                      className=" text-red-600"
+                      width={30}
+                    />
+                    Logout
+                  </button>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </div>
       </header>

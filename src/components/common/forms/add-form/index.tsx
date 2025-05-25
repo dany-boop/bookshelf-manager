@@ -122,7 +122,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
   }, [dispatch]);
 
   return (
-    <div>
+    <div className="bg-stone-100/30 dark:bg-gray-800/30 backdrop-filter backdrop-blur-md p-6 rounded-lg max-w-xl mx-auto shadow-md">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <h2 className="text-xl mb-5 text-center font-bold">
@@ -353,7 +353,7 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
             </div>
           </div>
 
-          <div className="flex items-center  mt-5">
+          <div className="flex items-center gap-5 mt-5 px-5">
             <Button
               type="submit"
               className="w-full mt-2 bg-gray-900 hover:bg-gray-800 dark:bg-gray-200 dark:hover:bg-gray-300 shadow-md hover:shadow-xl dark:text-slate-900 text-slate-50"
@@ -365,6 +365,13 @@ const AddBookForm: FC<BookFormProps> = ({ book, onClose, onSuccess }) => {
               ) : (
                 'Save'
               )}
+            </Button>
+            <Button
+              type="button"
+              onClick={onClose}
+              className="w-full mt-2 border border-slate-900 dark:border-slate-50 text-slate-900 dark:text-slate-50"
+            >
+              Cancel
             </Button>
           </div>
         </form>

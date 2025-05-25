@@ -46,7 +46,7 @@ const SearchBooks: React.FC<SearchBooksProps> = ({
         type="text"
         value={query}
         onChange={handleSearchChange}
-        placeholder="Search by title or author"
+        placeholder="Search by title "
         className={cn(
           'bg-gray-100 dark:bg-gray-900 border p-2 pl-9 rounded-xl focus:outline-0 w-full focus:border-green-500',
           className

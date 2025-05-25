@@ -13,7 +13,7 @@ export const menu: Menu[] = [
     icon: 'iconamoon:home-duotone',
   },
   { id: 2, name: 'Catalog', url: '/catalog', icon: 'ph:books-duotone' },
-  { id: 3, name: 'Profile', url: '/profile', icon: 'solar:user-bold-duotone' },
+  // { id: 3, name: 'Profile', url: '/profile', icon: 'solar:user-bold-duotone' },
 ];
 
 export const categories = [

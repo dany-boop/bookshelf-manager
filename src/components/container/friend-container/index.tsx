@@ -6,6 +6,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { fetchBooksData, resetBooksData } from '@/redux/reducers/bookSlice';
 import { fetchUser } from '@/redux/reducers/userSlice';
 import { AppDispatch, RootState } from '@/redux/store';
+import { Icon } from '@iconify/react/dist/iconify.js';
 import { Book } from '@prisma/client';
 import { motion } from 'framer-motion';
 import { useParams } from 'next/navigation';
@@ -28,7 +29,6 @@ const ContainerFriendPage = () => {
   const { catalog, loading } = useSelector((state: RootState) => state.books);
   const { username, photo_url } = useSelector((state: RootState) => state.user);
 
-  console.log(friendId);
   useEffect(() => {
     if (friendId) {
       dispatch(resetBooksData());
@@ -74,9 +74,13 @@ const ContainerFriendPage = () => {
         </div>
 
         <div className="absolute flex top-48 left-10">
-          <Avatar className=" h-28 w-28 shadow-md ">
-            <AvatarImage src={photo_url} alt="User Picture" />
-          </Avatar>
+          {photo_url ? (
+            <Avatar className=" h-28 w-28 shadow-md ">
+              <AvatarImage src={photo_url} alt="User Picture" />
+            </Avatar>
+          ) : (
+            <Icon icon="solar:user-bold-duotone" width={100} />
+          )}
           <h1 className="text-2xl font-bold my-auto ms-5 text-white  ">
             {username}
           </h1>

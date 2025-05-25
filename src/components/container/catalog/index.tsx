@@ -5,7 +5,7 @@ import {
   MultiSelectCombobox,
   SingleSelectCombobox,
 } from '@/components/ui/MultiSelect';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { languages, status_options } from '@/lib/data';
 import {
@@ -29,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { bookVariant } from '@/components/ui/animate-variants';
+import { bookVariant, filterVariants } from '@/components/ui/animate-variants';
 
 const CatalogContainer = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -149,7 +149,7 @@ const CatalogContainer = () => {
           </div>
 
           <div className="w-full md:flex-1 md:justify-center md:flex">
-            <TabsList className="flex w-full md:w-fit overflow-x-auto justify-center ">
+            <TabsList className="flex w-full md:w-fit  justify-center ">
               {status_options.map(({ label, value }) => (
                 <TabsTrigger
                   key={value}
@@ -168,32 +168,36 @@ const CatalogContainer = () => {
           </div>
         </div>
 
-        {filter && (
-          <motion.div
-            className="flex flex-col md:flex-row gap-4 md:gap-8 my-3 md:my-8 justify-evenly"
-            initial="hidden"
-            animate="show"
-          >
-            <MultiSelectCombobox
-              options={
-                Array.isArray(categories) ? categories.map((c) => c.name) : []
-              }
-              value={filters.category}
-              onChange={(selected) =>
-                dispatch(setFilters({ category: selected }))
-              }
-              placeholder="Select Categories"
-            />
-            <SingleSelectCombobox
-              options={languages}
-              value={filters.language}
-              onChange={(selected) =>
-                dispatch(setFilters({ language: selected }))
-              }
-              placeholder="Select a Language"
-            />
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {filter && (
+            <motion.div
+              className="flex flex-col md:flex-row gap-4 md:gap-8 my-3 md:my-8 justify-evenly"
+              variants={filterVariants}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+            >
+              <MultiSelectCombobox
+                options={
+                  Array.isArray(categories) ? categories.map((c) => c.name) : []
+                }
+                value={filters.category}
+                onChange={(selected) =>
+                  dispatch(setFilters({ category: selected }))
+                }
+                placeholder="Select Categories"
+              />
+              <SingleSelectCombobox
+                options={languages}
+                value={filters.language}
+                onChange={(selected) =>
+                  dispatch(setFilters({ language: selected }))
+                }
+                placeholder="Select a Language"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <TabsContent value={filters.status || 'none'}>
           {loading ? (
             <motion.div
