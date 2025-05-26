@@ -2,6 +2,7 @@
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
+    "typeRoots": ["./node_modules/@types", "./types"],
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -19,9 +20,16 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "next-pwa": ["./src/types/next-pwa.d.ts"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/use-loading-screen.tx"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/app/use-loading-screen.tx"
+  ],
   "exclude": ["node_modules"]
 }

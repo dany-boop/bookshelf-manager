@@ -5,6 +5,9 @@ import StoreProvider from '@/redux/storeProvider';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from './theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import ServiceWorker from './sw';
+import PWAInstallPrompt from '@/components/common/pwa-install-prompt';
+import OfflineNotice from '@/components/common/offline-notice';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -33,6 +36,10 @@ export default function RootLayout({
   return (
     <StoreProvider>
       <html lang="en">
+        <head>
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="theme-color" content="#000000" />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
@@ -44,6 +51,9 @@ export default function RootLayout({
             <Toaster position="top-center" richColors />
             <TooltipProvider>{children}</TooltipProvider>
           </ThemeProvider>
+          <PWAInstallPrompt />
+          <OfflineNotice />
+          <ServiceWorker />
         </body>
       </html>
     </StoreProvider>
