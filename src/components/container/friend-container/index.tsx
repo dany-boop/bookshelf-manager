@@ -4,7 +4,7 @@ import OptimizedImage from '@/components/common/image-loading';
 import SkeletonLoader from '@/components/common/skeleton/card-skeleton';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { fetchBooksData, resetBooksData } from '@/redux/reducers/bookSlice';
-import { fetchUser } from '@/redux/reducers/userSlice';
+import { clearUserData, fetchUser } from '@/redux/reducers/userSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Icon } from '@iconify/react/dist/iconify.js';
 import { Book } from '@prisma/client';
@@ -32,6 +32,7 @@ const ContainerFriendPage = () => {
   useEffect(() => {
     if (friendId) {
       dispatch(resetBooksData());
+      dispatch(clearUserData());
       dispatch(
         fetchBooksData({
           page: 1,

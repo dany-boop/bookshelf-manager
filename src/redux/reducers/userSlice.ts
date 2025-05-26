@@ -77,6 +77,14 @@ const userSlice = createSlice({
     resetEditUserState: (state) => {
       state.editUserState = { loading: false, success: false, error: null };
     },
+    clearUserData: (state) => {
+      state.id = '';
+      state.email = '';
+      state.username = '';
+      state.photo_url = '';
+      state.password = '';
+      state.error = undefined;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -116,5 +124,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { resetEditUserState } = userSlice.actions;
+export const { resetEditUserState, clearUserData } = userSlice.actions;
 export default userSlice.reducer;

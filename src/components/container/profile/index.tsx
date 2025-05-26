@@ -2,9 +2,8 @@
 import EditUserForm from '@/components/common/forms/user-form';
 import OptimizedImage from '@/components/common/image-loading';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { fetchUser } from '@/redux/reducers/userSlice';
+import { clearUserData, fetchUser } from '@/redux/reducers/userSlice';
 import { AppDispatch, RootState } from '@/redux/store';
-import { Icon } from '@iconify/react';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -19,6 +18,7 @@ const ContainerProfile = (props: Props) => {
   );
 
   useEffect(() => {
+    dispatch(clearUserData());
     dispatch(fetchUser(userId));
   }, [dispatch, userId]);
 
