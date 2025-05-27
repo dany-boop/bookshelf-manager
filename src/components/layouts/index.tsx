@@ -47,7 +47,7 @@ const MainLayout: FC<Props> = ({ children }) => {
 
   return (
     <>
-      <div className="flex h-screen max-w-screen overflow-hidden">
+      <div className="flex h-screen max-w-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
         {/* Sidebar */}
         <div
           ref={sidebarRef}
